@@ -3,7 +3,7 @@ unit APIUnit;
 interface
 
 uses
-	System.JSON, System.SysUtils, System.Diagnostics, System.Classes;
+	System.JSON, System.SysUtils, System.Diagnostics;
 
 
 procedure sendTestRequest();
@@ -16,6 +16,7 @@ uses logUnit, FileView;
 
 var
   stopwatch : TStopWatch;
+  whileasync : Integer;
 
 procedure log(text : string);
 begin
@@ -46,25 +47,9 @@ begin
   end;
 end;
 
-procedure awaitString(var holder : String);
-var
-	tohold : string;
-begin
-	log('Created Await Thread');
-	tohold := holder;
-	TThread.CreateAnonymousThread(procedure
-                                begin
-                                	tohold := '';
-                                 repeat
-                                   sleep(1);
-                                 until (tohold <> '');
-                                end);
-  log('Reached End of Await Thread');                              
-end;
-
 function stringFromAPI(field : string): String;
 var
-res : string;
+  respJSONObject : TJSONObject;
 begin
 	stopwatch := TStopwatch.Create;
   stopwatch.Start;
@@ -72,9 +57,12 @@ begin
   begin
     RESTRequest1.ExecuteAsync(procedure
     begin
-    	log((TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RESTResponse1.Content), 0).GetValue<string>(field)));
+    	log('field: ' + field);
+    	log(TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RESTResponse1.Content), 0).GetValue<string>(field));
     end, false, true);
   end;
+  //Result := respJSONObject.GetValue<string>(field);
+  Result := 'placeholder1';
   FileViewForm.Label1.Text := '(' + IntToStr(stopwatch.ElapsedMilliseconds) + ')';
   stopwatch.Reset;
 end;

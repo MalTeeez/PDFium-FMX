@@ -46,49 +46,18 @@ object PDFViewForm: TPDFViewForm
       ShowHint = True
       OnChange = ComboBoxZoomChange
     end
-    object PageNumLabel: TLabel
-      Position.X = 89.000000000000000000
-      Position.Y = 8.000000000000000000
-      Size.Width = 62.000000000000000000
-      Size.Height = 17.000000000000000000
+    object SpeedButtonPageNumber: TSpeedButton
+      Enabled = False
+      Hint = 'Select Page'
+      Position.X = 65.000000000000000000
+      Position.Y = 2.000000000000000000
+      Size.Width = 90.000000000000000000
+      Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
-      Text = 'of 0'
-      TabOrder = 2
-    end
-    object SpeedButton2: TSpeedButton
-      Images = ImageList
-      ImageIndex = 1
-      Position.X = 126.000000000000000000
-      Position.Y = 1.000000000000000000
-      Size.Width = 29.000000000000000000
-      Size.Height = 29.000000000000000000
-      Size.PlatformDefault = False
-      OnClick = ImageNextPageClick
-    end
-    object SpeedButton1: TSpeedButton
-      Images = ImageList
-      ImageIndex = 0
-      Position.X = 19.000000000000000000
-      Position.Y = 1.000000000000000000
-      Size.Width = 29.000000000000000000
-      Size.Height = 29.000000000000000000
-      Size.PlatformDefault = False
-      OnClick = ImagePreviousPageClick
-    end
-    object PageNumBox: TNumberBox
-      Touch.InteractiveGestures = [LongTap, DoubleTap]
-      TabOrder = 5
-      Cursor = crIBeam
-      DecimalDigits = 0
-      Min = 1.000000000000000000
-      Value = 1.000000000000000000
-      DisableFocusEffect = True
-      Position.X = 56.000000000000000000
-      Position.Y = 8.000000000000000000
-      Size.Width = 30.000000000000000000
-      Size.Height = 17.000000000000000000
-      Size.PlatformDefault = False
-      OnChange = PageNumBoxChange
+      ParentShowHint = False
+      ShowHint = True
+      Text = '0 of 0'
+      OnClick = SpeedButtonPageNumberClick
     end
   end
   object Panel2: TPanel
@@ -97,7 +66,6 @@ object PDFViewForm: TPDFViewForm
     Size.Width = 187.000000000000000000
     Size.Height = 514.000000000000000000
     Size.PlatformDefault = False
-    Visible = False
     TabOrder = 3
     object Label1: TLabel
       Position.X = 8.000000000000000000
@@ -119,18 +87,18 @@ object PDFViewForm: TPDFViewForm
   end
   object ScrollBox: TVertScrollBox
     Align = Client
-    Size.Width = 776.000000000000000000
+    Size.Width = 589.000000000000000000
     Size.Height = 514.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 4
     OnMouseWheel = ScrollBoxMouseWheel
     ShowSizeGrip = True
-    Viewport.Width = 776.000000000000000000
+    Viewport.Width = 589.000000000000000000
     Viewport.Height = 514.000000000000000000
     object FPdfView: TFPdfView
       Align = Center
       Enabled = False
-      Options = [reAnnotations, reLcd]
+      Options = [reAnnotations, reLcd, reNoNativeText]
       Pdf = FPdf
       OnMouseDown = FPdfViewMouseDown
       OnMouseMove = FPdfViewMouseMove
@@ -139,8 +107,27 @@ object PDFViewForm: TPDFViewForm
       OnPaint = FPdfViewPaint
     end
   end
+  object SpeedButton1: TSpeedButton
+    Images = ImageList
+    ImageIndex = 0
+    Position.X = 34.000000000000000000
+    Position.Y = 1.000000000000000000
+    Size.Width = 29.000000000000000000
+    Size.Height = 29.000000000000000000
+    Size.PlatformDefault = False
+    OnClick = ImagePreviousPageClick
+    object SpeedButton2: TSpeedButton
+      Images = ImageList
+      ImageIndex = 1
+      Position.X = 125.000000000000000000
+      Position.Y = -1.000000000000000000
+      Size.Width = 29.000000000000000000
+      Size.Height = 29.000000000000000000
+      Size.PlatformDefault = False
+      OnClick = ImageNextPageClick
+    end
+  end
   object FPdf: TFPdf
-    FormFill = False
     Left = 592
     Top = 416
   end

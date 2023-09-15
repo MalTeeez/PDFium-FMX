@@ -1,0 +1,22 @@
+unit APIUnit;
+
+interface
+
+implementation
+
+uses logUnit;
+
+procedure log(text : string);
+begin
+  LogUnit.LogForm.log(text);
+end;
+
+procedure sendTestRequest();
+begin
+  with LogForm do
+  begin
+  	log('');
+  end;
+end;
+
+end.

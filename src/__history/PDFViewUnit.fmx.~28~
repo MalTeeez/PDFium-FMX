@@ -97,7 +97,6 @@ object PDFViewForm: TPDFViewForm
     Size.Width = 187.000000000000000000
     Size.Height = 514.000000000000000000
     Size.PlatformDefault = False
-    Visible = False
     TabOrder = 3
     object Label1: TLabel
       Position.X = 8.000000000000000000
@@ -119,18 +118,18 @@ object PDFViewForm: TPDFViewForm
   end
   object ScrollBox: TVertScrollBox
     Align = Client
-    Size.Width = 776.000000000000000000
+    Size.Width = 589.000000000000000000
     Size.Height = 514.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 4
     OnMouseWheel = ScrollBoxMouseWheel
     ShowSizeGrip = True
-    Viewport.Width = 776.000000000000000000
+    Viewport.Width = 589.000000000000000000
     Viewport.Height = 514.000000000000000000
     object FPdfView: TFPdfView
       Align = Center
       Enabled = False
-      Options = [reAnnotations, reLcd]
+      Options = [reAnnotations, reLcd, reNoNativeText]
       Pdf = FPdf
       OnMouseDown = FPdfViewMouseDown
       OnMouseMove = FPdfViewMouseMove
@@ -140,7 +139,6 @@ object PDFViewForm: TPDFViewForm
     end
   end
   object FPdf: TFPdf
-    FormFill = False
     Left = 592
     Top = 416
   end

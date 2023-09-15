@@ -1,0 +1,47 @@
+unit APIUnit;
+
+interface
+
+uses
+	System.JSON, System.SysUtils, System.Diagnostics;
+
+
+procedure sendTestRequest();
+
+
+implementation
+
+uses logUnit, FileView;
+
+var
+  stopwatch : TStopWatch;
+
+procedure log(text : string);
+begin
+  LogUnit.LogForm.log(text);
+end;
+
+procedure processReqResponse(response : string);
+var
+  respJSONObject : TJSONObject;
+begin
+  respJSONObject := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(response), 0) as TJSONObject;
+  stopwatch.Stop;
+  FileViewForm.Label1.Text := '(' + IntToStr(stopwatch.ElapsedMilliseconds) + ') '
+  + respJSONObject.GetValue<string>('value');
+  stopwatch.Reset;
+end;
+
+procedure sendTestRequest();
+begin
+	stopwatch := TStopwatch.Create;
+  stopwatch.Start;
+  with FileViewForm do
+  begin
+    log('Pre Api GET');
+    RESTRequest1.ExecuteAsync(procedure begin processReqResponse(RESTResponse1.Content); end);
+  	log('Post Api GET');
+  end;
+end;
+
+end.

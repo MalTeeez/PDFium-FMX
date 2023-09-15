@@ -3,7 +3,7 @@ unit APIUnit;
 interface
 
 uses
-	System.JSON, System.SysUtils, System.Diagnostics, System.Classes;
+	System.JSON, System.SysUtils, System.Diagnostics;
 
 
 procedure sendTestRequest();
@@ -46,22 +46,6 @@ begin
   end;
 end;
 
-procedure awaitString(var holder : String);
-var
-	tohold : string;
-begin
-	log('Created Await Thread');
-	tohold := holder;
-	TThread.CreateAnonymousThread(procedure
-                                begin
-                                	tohold := '';
-                                 repeat
-                                   sleep(1);
-                                 until (tohold <> '');
-                                end);
-  log('Reached End of Await Thread');                              
-end;
-
 function stringFromAPI(field : string): String;
 var
 res : string;
@@ -72,9 +56,10 @@ begin
   begin
     RESTRequest1.ExecuteAsync(procedure
     begin
-    	log((TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RESTResponse1.Content), 0).GetValue<string>(field)));
+    	res := (TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RESTResponse1.Content), 0).GetValue<string>(field));
     end, false, true);
   end;
+  Result := res;
   FileViewForm.Label1.Text := '(' + IntToStr(stopwatch.ElapsedMilliseconds) + ')';
   stopwatch.Reset;
 end;

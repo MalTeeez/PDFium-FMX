@@ -47,19 +47,14 @@ begin
 end;
 
 procedure awaitString(var holder : String);
-var
-	tohold : string;
 begin
-	log('Created Await Thread');
-	tohold := holder;
 	TThread.CreateAnonymousThread(procedure
                                 begin
-                                	tohold := '';
+                                	holder := '';
                                  repeat
                                    sleep(1);
-                                 until (tohold <> '');
+                                 until (holder <> '');
                                 end);
-  log('Reached End of Await Thread');                              
 end;
 
 function stringFromAPI(field : string): String;
@@ -73,8 +68,9 @@ begin
     RESTRequest1.ExecuteAsync(procedure
     begin
     	log((TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(RESTResponse1.Content), 0).GetValue<string>(field)));
-    end, false, true);
+    end, true, true);
   end;
+  Result := res;
   FileViewForm.Label1.Text := '(' + IntToStr(stopwatch.ElapsedMilliseconds) + ')';
   stopwatch.Reset;
 end;

@@ -1,0 +1,19 @@
+program pdfiumfmx;
+
+uses
+  System.StartUpCopy,
+  FMX.Forms,
+  FileView in 'FileView.pas' {FileViewForm},
+  logUnit in 'logUnit.pas' {LogForm},
+  PDFViewUnit in 'PDFViewUnit.pas' {PDFViewForm},
+  APIUnit in 'APIUnit.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(TFileViewForm, FileViewForm);
+  Application.CreateForm(TLogForm, LogForm);
+  Application.CreateForm(TPDFViewForm, PDFViewForm);
+  Application.Run;
+end.

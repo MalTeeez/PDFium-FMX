@@ -130,7 +130,7 @@ object PDFViewForm: TPDFViewForm
     object FPdfView: TFPdfView
       Align = Center
       Enabled = False
-      Options = [reAnnotations, reLcd]
+      Options = [reAnnotations, reLcd, reNoNativeText]
       Pdf = FPdf
       OnMouseDown = FPdfViewMouseDown
       OnMouseMove = FPdfViewMouseMove
@@ -140,7 +140,6 @@ object PDFViewForm: TPDFViewForm
     end
   end
   object FPdf: TFPdf
-    FormFill = False
     Left = 592
     Top = 416
   end
