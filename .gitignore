@@ -1,0 +1,10 @@
+*
+!*/
+
+!.gitignore
+!src/**
+!img/**
+!pdfiumfmx.dpr
+!pdfiumfmx.dproj
+!pdfiumfmx.identcache
+!pdfiumfmx.res
