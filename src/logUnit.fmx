@@ -1,6 +1,7 @@
 object LogForm: TLogForm
   Left = 0
   Top = 0
+  Border.Styling = False
   BorderIcons = []
   Caption = 'log'
   ClientHeight = 686

@@ -22,7 +22,6 @@ object PDFViewForm: TPDFViewForm
     StyleLookup = 'pushpanel'
     TabOrder = 3
     object ComboBoxZoom: TComboBox
-      Align = Right
       CanFocus = False
       Hint = 'Zoom'
       Items.Strings = (
@@ -39,14 +38,10 @@ object PDFViewForm: TPDFViewForm
         'Zoom to Page'
         'Fit Width')
       ItemIndex = 11
-      Margins.Left = 3.000000000000000000
-      Margins.Top = 3.000000000000000000
-      Margins.Right = 3.000000000000000000
-      Margins.Bottom = 3.000000000000000000
       Position.X = 660.000000000000000000
       Position.Y = 3.000000000000000000
       Size.Width = 113.000000000000000000
-      Size.Height = 24.000000000000000000
+      Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 1
       TabStop = False
@@ -158,6 +153,25 @@ object PDFViewForm: TPDFViewForm
     Size.PlatformDefault = False
     StyleLookup = 'pushpanel'
     TabOrder = 2
+    object TreeView: TTreeView
+      Align = Client
+      Size.Width = 169.000000000000000000
+      Size.Height = 466.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = 'treeviewstyle'
+      TabOrder = 1
+      Visible = False
+      Viewport.Width = 165.000000000000000000
+      Viewport.Height = 462.000000000000000000
+      object eventHostItem: TTreeViewItem
+        IsChecked = False
+        IsExpanded = True
+        IsSelected = False
+        TabOrder = 0
+        Visible = False
+        OnClick = eventHostItemClick
+      end
+    end
     object BookmarkLabel: TLabel
       Align = MostTop
       StyledSettings = []
@@ -193,24 +207,14 @@ object PDFViewForm: TPDFViewForm
         OnClick = BookmarkButtonClick
       end
     end
-    object TreeView: TTreeView
-      Align = Client
-      Size.Width = 164.000000000000000000
-      Size.Height = 448.000000000000000000
-      Size.PlatformDefault = False
-      StyleLookup = 'treeviewstyle'
-      TabOrder = 1
-      ShowScrollBars = False
-      Viewport.Width = 164.000000000000000000
-      Viewport.Height = 448.000000000000000000
-      object eventHostItem: TTreeViewItem
-        IsChecked = False
-        IsExpanded = False
-        IsSelected = False
-        TabOrder = 0
-        Visible = False
-        OnClick = eventHostItemClick
-      end
+    object FloatAnimationClose: TFloatAnimation
+      Duration = 0.500000000000000000
+      OnFinish = FloatAnimationCloseFinish
+      PropertyName = 'Opacity'
+      StartValue = 1.000000000000000000
+      StopValue = 0.000000000000000000
+      Trigger = 'Tag=1'
+      TriggerInverse = 'Tag=0'
     end
   end
   object FPdf: TFPdf

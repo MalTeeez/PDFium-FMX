@@ -8,7 +8,7 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   Winsoft.FireMonkey.PDFium, FMX.Layouts, FMX.ListBox, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Objects, System.ImageList, FMX.ImgList, System.IOUtils, FMX.Edit, FMX.EditBox, FMX.NumberBox,
-  FMX.TreeView, System.Generics.Collections, System.Math.Vectors, FMX.Controls3D, FMX.Layers3D;
+  FMX.TreeView, System.Generics.Collections, System.Math, FMX.Ani;
 
 type
   TPDFViewForm = class(TForm)
@@ -17,20 +17,19 @@ type
     ComboBoxZoom: TComboBox;
     HeaderPanel: TPanel;
     ScrollBox: TVertScrollBox;
-    SpeedButton1: TSpeedButton;
+    PackBackButton: TSpeedButton;
     ImageList: TImageList;
-    SpeedButton2: TSpeedButton;
-    PageNumLabel: TLabel;
-    PageNumBox: TNumberBox;
+    PageFwdButton: TSpeedButton;
+    PageLabel: TLabel;
     TreeView: TTreeView;
-    BookmarkPanel: TPanel;
     eventHostItem: TTreeViewItem;
-    Splitter3D1: TSplitter3D;
     BookmarkLabel: TLabel;
     BookmarkClose: TSpeedButton;
-    TopPanel: TPanel;
-    TreeViewPanel: TPanel;
-    SpeedButton3: TSpeedButton;
+    BookmarkPanel: TPanel;
+    BookmarkButton: TSpeedButton;
+    SeperatorLine: TLine;
+    PageLine: TLine;
+    PageEdit: TEdit;
     procedure FPdfViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Single);
     procedure FPdfViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
@@ -48,8 +47,10 @@ type
     procedure ImageNextPageClick(Sender: TObject);
     procedure ImagePreviousPageClick(Sender: TObject);
     procedure SpeedButtonPageNumberClick(Sender: TObject);
-    procedure PageNumBoxChange(Sender: TObject);
     procedure eventHostItemClick(Sender: TObject);
+    procedure PageEditChange(Sender: TObject);
+    procedure BookmarkButtonClick(Sender: TObject);
+    procedure FloatAnimationCloseFinish(Sender: TObject);
   private
     { Private-Deklarationen }
     Selecting: Boolean;
@@ -81,9 +82,28 @@ begin
   LogForm.ListBox.Items.Add(text);
 end;
 
-procedure TPDFViewForm.PageNumBoxChange(Sender: TObject);
+
+procedure TPDFViewForm.PageEditChange(Sender: TObject);
+var
+page	:	Integer;
 begin
-  FPdfView.PageNumber := Trunc(TNumberBox(Sender).Value);
+  if (TEdit(Sender).Text = '') then
+  begin
+  	page := 1;
+  end else
+  begin
+  	page := StrToInt(TEdit(Sender).Text);
+  end;
+
+  if (page > FPdfView.PageCount) then
+  begin
+    page := FPdfView.PageCount;
+  end else if (page <= 0) then
+  begin
+    page := 1;
+  end;
+  FPdfView.PageNumber := page;
+  TEdit(Sender).SelStart := 999;
 end;
 
 function calcHeight(width : Single; text : String): Single;
@@ -92,17 +112,14 @@ var
   map : TBitmap;
 begin
   Result := 20;
-  PDFViewForm.log('got item request for width: ' + IntToStr(trunc(width)));
   map := TBitmap.Create;
   try
-  	x := map.Canvas.TextWidth(text);
-    PDFViewForm.log('With Text: ' + text + ' which has length: ' + IntToStr(trunc(x)));
-    y := 20 * (x / width);
+  	x := map.Canvas.TextWidth(text) + 15;
+    y := 20 * Ceil(x / width);
     if (x > width) and (y > 20) then
     begin
-      Result := trunc(y * 2.0);
+      Result := trunc(y * 1.15);
     end;
-    PDFViewForm.log('Which was turned into: ' + IntToStr(trunc((Result))));
   finally
     map.Free;
   end;
@@ -144,7 +161,7 @@ begin
       Node.Tag := Bookmarks[I].PageNumber;
       TreeView.AddObject(Node);
       Node.OnClick := PDFViewForm.eventHostItemClick;
-      Node.Height := calcHeight(TreeView.Width, Node.Text);
+      Node.Height := calcHeight(TreeView.Width - 33, Node.Text);  //- 11 (Popopen Scrollbar Offset), -22 (Left Side Spacing Offset)
       addChildBookmarks(Node, Bookmarks[I], 1);
       NodeItems.Add(Node);
     end;
@@ -160,8 +177,7 @@ begin
   FPdfView.Active := True;
   FPdfView.Enabled := True;
 
-  PageNumLabel.Text := 'of ' + IntToStr(FPdfView.PageCount);
-  PageNumBox.Max := FPdfView.PageCount;
+  PageLabel.Text := 'of ' + IntToStr(FPdfView.PageCount);
 	Zoom;
   FPdfView.Repaint;
 
@@ -183,7 +199,7 @@ begin
     BookmarkNode.AddObject(Node);
     AddChildBookmarks(Node, Bookmarks[I], recursiveLayer + 1);
     NodeItems.Add(Node);
-    Node.Height := calcHeight(TreeView.Width - (20 * recursiveLayer), Node.Text);
+    Node.Height := calcHeight(TreeView.Width - (20 * recursiveLayer) - 33, Node.Text);
     Node.OnClick := PDFViewForm.eventHostItemClick;
   end;
 end;
@@ -289,6 +305,18 @@ begin
   Result := CharInSet(C, ['a'..'z', 'A'..'Z', '0'..'9']);
 end;
 
+procedure TPDFViewForm.BookmarkButtonClick(Sender: TObject);
+begin
+  if (BookmarkPanel.Visible) then
+  begin
+    BookmarkPanel.Visible := false;
+  end else
+  begin
+    BookmarkPanel.Visible := true;
+  end;
+  Zoom;
+end;
+
 procedure TPDFViewForm.ComboBoxZoomChange(Sender: TObject);
 begin
   Zoom;
@@ -296,8 +324,28 @@ end;
 
 procedure TPDFViewForm.eventHostItemClick(Sender: TObject);
 begin
-	log(IntToStr(trunc((TTreeViewItem(Sender).Width))));
-  //TTreeViewItem(Sender).Height := calcHeight(TTreeViewItem(Sender));
+	if TTreeViewItem(Sender).IsExpanded = true then
+    begin
+       TTreeViewItem(Sender).Collapse;
+       TTreeViewItem(Sender).IsExpanded := false;
+  	end else
+  	begin
+  		TTreeViewItem(Sender).Expand;
+      TTreeViewItem(Sender).IsExpanded := true;
+  	end;
+  FPdfView.PageNumber := TTreeViewItem(Sender).Tag;
+end;
+
+procedure TPDFViewForm.FloatAnimationCloseFinish(Sender: TObject);
+begin
+	if (BookmarkPanel.Tag = 1) then
+  begin
+    BookmarkPanel.Visible := false;
+  end else
+  begin
+    BookmarkPanel.Visible := false;
+  end;
+  Zoom;
 end;
 
 procedure TPDFViewForm.FormCreate(Sender: TObject);
@@ -308,6 +356,7 @@ begin
   if TBehaviorServices.Current.SupportsBehaviorService(IDeviceBehavior, DeviceBehavior, Self) then
     PixelsPerInch := DeviceBehavior.GetDisplayMetrics(Self).PixelsPerInch;
   ScrollBox.AniCalculations.Animation := true;
+  TreeView.AniCalculations.Animation := true;
 end;
 
 procedure TPDFViewForm.FormResize(Sender: TObject);
@@ -435,7 +484,7 @@ begin
   SelectionStart := -1;
   SelectionEnd := -1;
 
-  PageNumBox.Value := FPdfView.PageNumber;
+  PageEdit.Text := IntToStr(FPdfView.PageNumber);
   Zoom;
   FPdfView.Repaint;
 end;
@@ -463,7 +512,7 @@ begin
   if FPdfView.PageNumber < FPdfView.PageCount then
   begin
     FPdfView.PageNumber := FPdfView.PageNumber + 1;
-      PageNumLabel.Text := 'of ' + IntToStr(FPdfView.PageCount);
+      PageLabel.Text := 'of ' + IntToStr(FPdfView.PageCount);
   end;
 
 end;
