@@ -30,6 +30,11 @@ type
     SeperatorLine: TLine;
     PageLine: TLine;
     PageEdit: TEdit;
+    SearchEdit: TEdit;
+    SearchLine: TLine;
+    SearchButton: TSpeedButton;
+    ProgressBar: TProgressBar;
+    FloatAnimation1: TFloatAnimation;
     procedure FPdfViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Single);
     procedure FPdfViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
@@ -51,14 +56,19 @@ type
     procedure PageEditChange(Sender: TObject);
     procedure BookmarkButtonClick(Sender: TObject);
     procedure FloatAnimationCloseFinish(Sender: TObject);
+    procedure SearchEditChangeTracking(Sender: TObject);
+    procedure SearchEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char;
+      Shift: TShiftState);
+    procedure SearchButtonClick(Sender: TObject);
   private
     { Private-Deklarationen }
-    Selecting: Boolean;
-    SelectionStart: Integer;
-    SelectionEnd: Integer;
-    PixelsPerInch: Double;
-    WheelStackDelta: Integer;
-    NodeItems 	: TObjectList<TTreeViewItem>;
+    Selecting				: Boolean;
+    SelectionStart	: Integer;
+    SelectionEnd		: Integer;
+    PixelsPerInch		: Double;
+    WheelStackDelta	: Integer;
+    SearchStart			: Integer;
+    SearchEnd				: Integer;
     procedure Zoom;
     procedure log(const text: string);
     procedure addChildBookmarks(BookmarkNode: TTreeViewItem; const Bookmark: TBookmark; recursiveLayer : Integer);
@@ -152,7 +162,6 @@ begin
   TreeView.BeginUpdate;
   try
   	TreeView.Clear;
-    NodeItems := TObjectList<TTreeViewItem>.Create;
     for I := 0 to Length(Bookmarks) - 1 do
     begin
     	Node := TTreeViewItem.Create(TreeView);
@@ -163,7 +172,6 @@ begin
       Node.OnClick := PDFViewForm.eventHostItemClick;
       Node.Height := calcHeight(TreeView.Width - 33, Node.Text);  //- 11 (Popopen Scrollbar Offset), -22 (Left Side Spacing Offset)
       addChildBookmarks(Node, Bookmarks[I], 1);
-      NodeItems.Add(Node);
     end;
 
      if TreeView.Count > 0 then
@@ -198,7 +206,6 @@ begin
     Node.Tag := Bookmarks[I].PageNumber;
     BookmarkNode.AddObject(Node);
     AddChildBookmarks(Node, Bookmarks[I], recursiveLayer + 1);
-    NodeItems.Add(Node);
     Node.Height := calcHeight(TreeView.Width - (20 * recursiveLayer) - 33, Node.Text);
     Node.OnClick := PDFViewForm.eventHostItemClick;
   end;
@@ -233,6 +240,74 @@ begin
     //ScrollBox.ScrollBy(0,-100);
   end;
   WheelDelta := 0;
+end;
+
+procedure TPDFViewForm.SearchButtonClick(Sender: TObject);
+var
+	FoundIndex: Integer;
+	Cancel  : Boolean;
+begin
+	Cancel := false;
+  if SearchEdit.Text <> '' then
+  begin
+    ProgressBar.Max := FPdf.PageCount - FPdfView.PageNumber;
+    ProgressBar.Value := 0;
+    try
+      FPdf.PageNumber := FPdfView.PageNumber;
+      if SearchStart = -1 then
+        FoundIndex := FPdf.FindFirst(SearchEdit.Text, [])
+      else
+        FoundIndex := FPdf.FindNext;
+
+      SearchStart := -1;
+      SearchEnd := -1;
+
+      while (FoundIndex = -1) and (FPdf.PageNumber < FPdf.PageCount) do
+      begin
+        ProgressBar.Value := ProgressBar.Value + 1;
+        Application.ProcessMessages;
+        if Cancel then
+          Break;
+
+        FPdf.PageNumber := FPdf.PageNumber + 1;
+        FoundIndex := FPdf.FindFirst(SearchEdit.Text, [])
+      end;
+
+      if FoundIndex <> -1 then
+      begin
+        FPdfView.PageNumber := FPdf.PageNumber;
+        SearchStart := FoundIndex;
+        SearchEnd := FoundIndex + Length(SearchEdit.Text) - 1;
+        FPdfView.Repaint;
+      end
+      else
+      begin
+        FPdfView.Repaint;
+        if not Cancel then
+          ShowMessage('Text not found');
+      end;
+    finally
+    end;
+  end
+end;
+
+procedure TPDFViewForm.SearchEditChangeTracking(Sender: TObject);
+begin
+if SearchStart <> -1 then
+  begin
+    SearchStart := -1;
+    SearchEnd := -1;
+    FPdfView.Repaint;
+  end;
+end;
+
+procedure TPDFViewForm.SearchEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char;
+  Shift: TShiftState);
+begin
+if Key = 13 then
+  begin
+    SearchButtonClick(SearchButton);
+  end;
 end;
 
 procedure TPDFViewForm.SpeedButtonPageNumberClick(Sender: TObject);
@@ -494,6 +569,7 @@ begin
 if FPdfView.Enabled then
   begin
     FPdfView.PaintSelection(SelectionStart, SelectionEnd, TAlphaColor($8080C0F0));
+    FPdfView.PaintSelection(SearchStart, SearchEnd, TAlphaColor($8000E000));
   end;
 end;
 
