@@ -8,7 +8,7 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   Winsoft.FireMonkey.PDFium, FMX.Layouts, FMX.ListBox, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Objects, System.ImageList, FMX.ImgList, System.IOUtils, FMX.Edit, FMX.EditBox, FMX.NumberBox,
-  FMX.TreeView, System.Generics.Collections, System.Math.Vectors, FMX.Controls3D, FMX.Layers3D;
+  FMX.TreeView, System.Generics.Collections;
 
 type
   TPDFViewForm = class(TForm)
@@ -25,12 +25,6 @@ type
     TreeView: TTreeView;
     BookmarkPanel: TPanel;
     eventHostItem: TTreeViewItem;
-    Splitter3D1: TSplitter3D;
-    BookmarkLabel: TLabel;
-    BookmarkClose: TSpeedButton;
-    TopPanel: TPanel;
-    TreeViewPanel: TPanel;
-    SpeedButton3: TSpeedButton;
     procedure FPdfViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Single);
     procedure FPdfViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
@@ -73,7 +67,7 @@ implementation
 
 {$R *.fmx}
 
-uses logUnit, FMX.Platform, FMX.BehaviorManager, FileView;
+uses logUnit, FMX.Platform, FMX.BehaviorManager;
 
 //HELPERS
 procedure TPDFViewForm.log(const text: string);
@@ -88,19 +82,18 @@ end;
 
 function calcHeight(width : Single; text : String): Single;
 var
-  x, y : Single;
+  x : Single;
   map : TBitmap;
 begin
-  Result := 20;
+  Result := width;
   PDFViewForm.log('got item request for width: ' + IntToStr(trunc(width)));
+
   map := TBitmap.Create;
   try
   	x := map.Canvas.TextWidth(text);
-    PDFViewForm.log('With Text: ' + text + ' which has length: ' + IntToStr(trunc(x)));
-    y := 20 * (x / width);
-    if (x > width) and (y > 20) then
+    if x > width then
     begin
-      Result := trunc(y * 2.0);
+      Result := 20 * (x / width);
     end;
     PDFViewForm.log('Which was turned into: ' + IntToStr(trunc((Result))));
   finally
@@ -193,7 +186,7 @@ procedure TPDFViewForm.ScrollBoxMouseWheel(Sender: TObject; Shift: TShiftState; 
   var
   maxPages, currPage, tolerance:  Integer;
 begin
-  tolerance := trunc((Screen.Height/abs(WheelDelta)) * 37.5);
+  tolerance := 600;
 	if (WheelStackDelta + WheelDelta < WheelStackDelta) and (WheelDelta > 0)
   or (WheelStackDelta + WheelDelta > WheelStackDelta) and (WheelDelta < 0) then
   begin
@@ -216,7 +209,6 @@ begin
     WheelStackDelta := 0;
     //ScrollBox.ScrollBy(0,-100);
   end;
-  WheelDelta := 0;
 end;
 
 procedure TPDFViewForm.SpeedButtonPageNumberClick(Sender: TObject);

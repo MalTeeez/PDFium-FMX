@@ -1,0 +1,213 @@
+object PDFViewForm: TPDFViewForm
+  Left = 0
+  Top = 0
+  Caption = 'PDF View'
+  ClientHeight = 504
+  ClientWidth = 776
+  Position = ScreenCenter
+  Quality = HighQuality
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop, iPhone, iPad]
+  OnCreate = FormCreate
+  OnResize = FormResize
+  DesignerMasterStyle = 0
+  object Panel1: TPanel
+    Align = Top
+    Size.Width = 776.000000000000000000
+    Size.Height = 30.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    object ComboBoxZoom: TComboBox
+      CanFocus = False
+      Hint = 'Zoom'
+      Items.Strings = (
+        '10%'
+        '25%'
+        '50%'
+        '75%'
+        '100%'
+        '125%'
+        '150%'
+        '200%'
+        '400%'
+        'Actual Size'
+        'Zoom to Page'
+        'Fit Width')
+      ItemIndex = 11
+      Position.X = 660.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 113.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      TabStop = False
+      ParentShowHint = False
+      ShowHint = True
+      OnChange = ComboBoxZoomChange
+    end
+    object PageNumLabel: TLabel
+      Position.X = 89.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 62.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'of 0'
+      TabOrder = 2
+    end
+    object SpeedButton2: TSpeedButton
+      Images = ImageList
+      ImageIndex = 1
+      Position.X = 126.000000000000000000
+      Position.Y = 1.000000000000000000
+      Size.Width = 29.000000000000000000
+      Size.Height = 29.000000000000000000
+      Size.PlatformDefault = False
+      OnClick = ImageNextPageClick
+    end
+    object SpeedButton1: TSpeedButton
+      Images = ImageList
+      ImageIndex = 0
+      Position.X = 19.000000000000000000
+      Position.Y = 1.000000000000000000
+      Size.Width = 29.000000000000000000
+      Size.Height = 29.000000000000000000
+      Size.PlatformDefault = False
+      OnClick = ImagePreviousPageClick
+    end
+    object PageNumBox: TNumberBox
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      TabOrder = 5
+      Cursor = crIBeam
+      DecimalDigits = 0
+      Min = 1.000000000000000000
+      Value = 1.000000000000000000
+      DisableFocusEffect = True
+      Position.X = 56.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 30.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      OnChange = PageNumBoxChange
+    end
+  end
+  object Panel2: TPanel
+    Align = Left
+    Position.Y = 30.000000000000000000
+    Size.Width = 187.000000000000000000
+    Size.Height = 514.000000000000000000
+    Size.PlatformDefault = False
+    Visible = False
+    TabOrder = 3
+    object Label1: TLabel
+      Position.X = 8.000000000000000000
+      Position.Y = 64.000000000000000000
+      Size.Width = 81.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'Current Page: '
+      TabOrder = 1
+    end
+    object Label2: TLabel
+      Position.X = 89.000000000000000000
+      Position.Y = 64.000000000000000000
+      Size.Width = 81.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+    end
+  end
+  object ScrollBox: TVertScrollBox
+    Align = Client
+    Size.Width = 776.000000000000000000
+    Size.Height = 474.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    OnMouseWheel = ScrollBoxMouseWheel
+    ShowSizeGrip = True
+    Viewport.Width = 776.000000000000000000
+    Viewport.Height = 474.000000000000000000
+    object FPdfView: TFPdfView
+      Align = Center
+      Enabled = False
+      Options = [reAnnotations, reLcd]
+      Pdf = FPdf
+      OnMouseDown = FPdfViewMouseDown
+      OnMouseMove = FPdfViewMouseMove
+      OnMouseUp = FPdfViewMouseUp
+      OnPageChange = FPdfViewPageChange
+      OnPaint = FPdfViewPaint
+    end
+  end
+  object FPdf: TFPdf
+    FormFill = False
+    Left = 592
+    Top = 416
+  end
+  object ImageList: TImageList
+    Source = <
+      item
+        MultiResBitmap.Height = 24
+        MultiResBitmap.Width = 24
+        MultiResBitmap = <
+          item
+            Width = 24
+            Height = 24
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000018000000180806000000E0773D
+              F8000000017352474200AECE1CE90000000467414D410000B18F0BFC61050000
+              006449444154484BED93C109C0300845A5716F711B13E7C93C964052424FA528
+              85E203112FEFEB4148926F20221B35475FA6D810D17AEFBE21BB5C55E3E4ADB5
+              3879AD35465E4A79253F667F8499EFF217FB15221293F2CF10F7475B8C10668E
+              9127C90D80137712516FE95EC6A20000000049454E44AE426082}
+            FileName = 
+              'C:\Users\Mika\Documents\Delphi_Projects\PDFIUM-FMX\img\leftchevr' +
+              'on.png'
+          end>
+        Name = 'Left Chevron'
+      end
+      item
+        MultiResBitmap.Height = 24
+        MultiResBitmap.Width = 24
+        MultiResBitmap = <
+          item
+            Width = 24
+            Height = 24
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000018000000180806000000E0773D
+              F8000000017352474200AECE1CE90000000467414D410000B18F0BFC61050000
+              005749444154484BEDD34B0AC030084551A9FBD6CDF8D98F1BB204322F420D2D
+              782621937733098C7106112533E7BEBE2B221211D7785FC4DDFB2366D61F51D5
+              FE88889422D73EBFA1FAFA92FF8E1FF9686BB86D7C8C0700378A044DF42E2B7C
+              5C0000000049454E44AE426082}
+            FileName = 
+              'C:\Users\Mika\Documents\Delphi_Projects\PDFIUM-FMX\img\rightchev' +
+              'ron.png'
+          end>
+        Name = 'Right Chevron'
+      end>
+    Destination = <
+      item
+        Layers = <
+          item
+            Name = 'Left Chevron'
+            SourceRect.Left = 4.000000000000000000
+            SourceRect.Top = 4.000000000000000000
+            SourceRect.Right = 20.000000000000000000
+            SourceRect.Bottom = 20.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'Right Chevron'
+            SourceRect.Left = 4.000000000000000000
+            SourceRect.Top = 4.000000000000000000
+            SourceRect.Right = 20.000000000000000000
+            SourceRect.Bottom = 20.000000000000000000
+          end>
+      end>
+    Left = 200
+    Top = 88
+  end
+end

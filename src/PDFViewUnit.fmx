@@ -1,22 +1,25 @@
 object PDFViewForm: TPDFViewForm
   Left = 0
   Top = 0
+  Border.Styling = False
   Caption = 'PDF View'
-  ClientHeight = 544
+  ClientHeight = 504
   ClientWidth = 776
   Position = ScreenCenter
   Quality = HighQuality
+  StyleBook = FileViewForm.StyleBook
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop, iPhone, iPad]
   OnCreate = FormCreate
   OnResize = FormResize
   DesignerMasterStyle = 0
-  object Panel1: TPanel
+  object HeaderPanel: TPanel
     Align = Top
     Size.Width = 776.000000000000000000
     Size.Height = 30.000000000000000000
     Size.PlatformDefault = False
+    StyleLookup = 'pushpanel'
     TabOrder = 2
     object ComboBoxZoom: TComboBox
       CanFocus = False
@@ -47,8 +50,8 @@ object PDFViewForm: TPDFViewForm
       OnChange = ComboBoxZoomChange
     end
     object PageNumLabel: TLabel
-      Position.X = 89.000000000000000000
-      Position.Y = 8.000000000000000000
+      Position.X = 104.000000000000000000
+      Position.Y = 6.000000000000000000
       Size.Width = 62.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
@@ -58,20 +61,18 @@ object PDFViewForm: TPDFViewForm
     object SpeedButton2: TSpeedButton
       Images = ImageList
       ImageIndex = 1
-      Position.X = 126.000000000000000000
-      Position.Y = 1.000000000000000000
-      Size.Width = 29.000000000000000000
-      Size.Height = 29.000000000000000000
+      Position.X = 136.000000000000000000
+      Size.Width = 20.000000000000000000
+      Size.Height = 28.000000000000000000
       Size.PlatformDefault = False
       OnClick = ImageNextPageClick
     end
     object SpeedButton1: TSpeedButton
       Images = ImageList
       ImageIndex = 0
-      Position.X = 19.000000000000000000
-      Position.Y = 1.000000000000000000
-      Size.Width = 29.000000000000000000
-      Size.Height = 29.000000000000000000
+      Position.X = 43.000000000000000000
+      Size.Width = 20.000000000000000000
+      Size.Height = 28.000000000000000000
       Size.PlatformDefault = False
       OnClick = ImagePreviousPageClick
     end
@@ -83,50 +84,34 @@ object PDFViewForm: TPDFViewForm
       Min = 1.000000000000000000
       Value = 1.000000000000000000
       DisableFocusEffect = True
-      Position.X = 56.000000000000000000
-      Position.Y = 8.000000000000000000
+      Position.X = 71.000000000000000000
+      Position.Y = 6.000000000000000000
       Size.Width = 30.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
       OnChange = PageNumBoxChange
     end
-  end
-  object Panel2: TPanel
-    Align = Left
-    Position.Y = 30.000000000000000000
-    Size.Width = 187.000000000000000000
-    Size.Height = 514.000000000000000000
-    Size.PlatformDefault = False
-    Visible = False
-    TabOrder = 3
-    object Label1: TLabel
-      Position.X = 8.000000000000000000
-      Position.Y = 64.000000000000000000
-      Size.Width = 81.000000000000000000
-      Size.Height = 17.000000000000000000
+    object SpeedButton3: TSpeedButton
+      StyledSettings = [Family, Style, FontColor]
+      Images = ImageList
+      ImageIndex = 2
+      Position.X = 4.000000000000000000
+      Size.Width = 26.000000000000000000
+      Size.Height = 28.000000000000000000
       Size.PlatformDefault = False
-      Text = 'Current Page: '
-      TabOrder = 1
-    end
-    object Label2: TLabel
-      Position.X = 89.000000000000000000
-      Position.Y = 64.000000000000000000
-      Size.Width = 81.000000000000000000
-      Size.Height = 17.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 0
+      TextSettings.Font.Size = 16.000000000000000000
     end
   end
   object ScrollBox: TVertScrollBox
     Align = Client
-    Size.Width = 776.000000000000000000
-    Size.Height = 514.000000000000000000
+    Size.Width = 602.000000000000000000
+    Size.Height = 474.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 4
+    TabOrder = 3
     OnMouseWheel = ScrollBoxMouseWheel
     ShowSizeGrip = True
-    Viewport.Width = 776.000000000000000000
-    Viewport.Height = 514.000000000000000000
+    Viewport.Width = 602.000000000000000000
+    Viewport.Height = 474.000000000000000000
     object FPdfView: TFPdfView
       Align = Center
       Enabled = False
@@ -138,6 +123,85 @@ object PDFViewForm: TPDFViewForm
       OnPageChange = FPdfViewPageChange
       OnPaint = FPdfViewPaint
     end
+  end
+  object BookmarkPanel: TPanel
+    Align = Left
+    Position.Y = 30.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 474.000000000000000000
+    Size.PlatformDefault = False
+    StyleLookup = 'pushpanel'
+    TabOrder = 7
+    object TopPanel: TPanel
+      Align = MostTop
+      Size.Width = 169.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = 'panelstyle'
+      TabOrder = 1
+      object BookmarkLabel: TLabel
+        Align = MostTop
+        StyledSettings = []
+        Size.Width = 169.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.Family = 'Inter'
+        TextSettings.Font.Size = 16.000000000000000000
+        TextSettings.FontColor = xFF6F6F6F
+        Text = '  Bookmarks'
+        TabOrder = 0
+      end
+      object BookmarkClose: TSpeedButton
+        StyledSettings = [Family, Style, FontColor]
+        Images = ImageList
+        ImageIndex = 5
+        Position.X = 148.000000000000000000
+        Position.Y = 3.000000000000000000
+        Scale.X = 0.800000011920929000
+        Scale.Y = 0.800000011920929000
+        Size.Width = 22.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.Size = 16.000000000000000000
+      end
+    end
+    object TreeViewPanel: TPanel
+      Align = Client
+      Margins.Left = 5.000000000000000000
+      Size.Width = 164.000000000000000000
+      Size.Height = 449.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = 'pushpanel'
+      TabOrder = 2
+      object TreeView: TTreeView
+        Align = Client
+        Size.Width = 169.000000000000000000
+        Size.Height = 466.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = 'treeviewstyle'
+        TabOrder = 0
+        Visible = False
+        Viewport.Width = 165.000000000000000000
+        Viewport.Height = 462.000000000000000000
+        object eventHostItem: TTreeViewItem
+          IsChecked = False
+          IsExpanded = True
+          IsSelected = False
+          TabOrder = 0
+          Visible = False
+          OnClick = eventHostItemClick
+        end
+      end
+    end
+  end
+  object Splitter3D1: TSplitter3D
+    Align = Left
+    Cursor = crHSplit
+    Height = 474.000000000000000000
+    Position.X = 171.000000000000000000
+    Position.Y = 267.000000000000000000
+    Projection = Screen
+    Width = 5.000000000000000000
   end
   object FPdf: TFPdf
     FormFill = False
@@ -185,26 +249,217 @@ object PDFViewForm: TPDFViewForm
               'ron.png'
           end>
         Name = 'Right Chevron'
+      end
+      item
+        MultiResBitmap.Height = 64
+        MultiResBitmap.Width = 64
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 64
+            Height = 64
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000040000000400806000000AA6971
+              DE000000017352474200AECE1CE90000000467414D410000B18F0BFC61050000
+              022849444154785EED9B3D4F1B411445BD6B42EB50F3078C45438914C58A8452
+              2645AA54E9FCD5A7A1491A0AF801DEB5ABB4A12352CA449152A40C0D027A6A0B
+              97107B37773C17148B10D64314E5ED7BA7B96F1EF2CA73D8D9D1A025AADC934E
+              A7F3228AA2F728ABBEF35F33C2777DDCEFF78F38AEDC4B00267F810B2E732889
+              D32449EAAE0816D0ED76739652398184B5200198FC1EE2B51F89A611B3589432
+              4CDEF12D544059A8852E817FBAFEB32C3BC4C3F60D87216CE0F36F59CF214200
+              F88207D613D60B83DDEA19041C703887F62560024C00532DEA0544B73DD1F33C
+              7F9EA6E9070EE7B05DA0449800A65A4C00532D2680A91613C0548B0960AAC504
+              30D5225E40B3D95CC2E9F4BCDD6EAFB2B510A20560E2EF1A8DC60F94B5388ECF
+              70EC3DF63F298E4801BD5EEF11FF26F1CA773C38F3D75D1F22B6D9BA135102DC
+              EDDE6AB546799E7F65EBB740C48E1351645988109065D9E5D5ED5EAD5657D8BE
+              93AB65016113B66E20420026F2143177BB17C52D0B7CFE23873710FD10FC1B98
+              00A65A4C00532D2680A91613C0548B0960AAC50430D5A25AC0743ACD8204E07C
+              FD89A56870547E1924204DD32D9662C16F7F32180CF68397002EF090A54886C3
+              E10397C1027081719224EE55DBCFBE23865D7EEF19416F899509D5BB80C30430
+              D56202986AF9D32EE0FEC5E4BB1FC92064D7BA5580447EDDDF8BE296C0D8973A
+              7102367DA99318B78D7BA9E0C40FF531DB0520610D71EA6A6D5C6F839050C7F9
+              781DE5C8773450A9FC04BFAE9B88E8D89C090000000049454E44AE426082}
+            FileName = 
+              'C:\Users\Mika\Documents\Delphi_Projects\PDFIUM-FMX\img\bookmark.' +
+              'png'
+          end>
+        Name = 'Bookmark Sidebar Open'
+      end
+      item
+        MultiResBitmap.Height = 64
+        MultiResBitmap.Width = 64
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 64
+            Height = 64
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000040000000400806000000AA6971
+              DE000000017352474200AECE1CE90000000467414D410000B18F0BFC61050000
+              032C49444154785EED9A3D88134118866F77398C111251B1B0104BFFC0E30E14
+              0B6B1B0B1582E0A96942FEE038CF4E7B050B7FBAFC54C2A988956277A5850A7A
+              DAA8D8095AA877D7084202C9667DE7F21A0E928D99EC24BB61E681E59B771236
+              FBBDF77D33BBDC5A538AC9E572875DD77D3D3D3D9DE05428B45AAD954AA5729A
+              D217A506140A859708A7DA2A1AC0882330E2336517366360F2F9FC1D8448252F
+              B06DFB532A957228BB5066806559D7388C1CC964F217875D283100A57F9EC348
+              82F56837875DA8AA80B38C1387F25D206CB016ADA21D67293B944AA59EB92A5B
+              0326156300A3B6686FC0C08BE0E2E2E2CE7ABD3E433956B0A86D94CBE58F947D
+              915D04FF6B40B1585CF23CEF2E65D87C41228738EE89D25D003738EF2294BCE0
+              20AEC9E35809BE06C0C93308736D152D3299CC6F0E03E36B00CAE8058791433C
+              6A2F2C2C6CA30CC4C4EE028D46E32A8781F05D047BF55AB3D9FCEE38CE6DCAB1
+              803568071E69BB7E13CFF90FF19C7F99B283B25DA09701B898F7D88EC6BA2E64
+              B3D93D307D9D722BCB48EA0AC71DCCB38024C600466D3106306A8B3180515B8C
+              018CDA620C60D4166300A3B6180318B5C518C0A82DC600466D3106306A8B3180
+              515B8C018CDA620C60D4166300A3B61803184746369B3D393F3F5F17FF6ECFE7
+              F3B7383D323CCF937A7364640620D91B2269C7715E251289CD8BB22CEB3A8D78
+              934EA7639B5F544CA552398A701C46D4DB33FD516D80850457449248F626E7BA
+              C06727E2F1780D46FC29168BCADF3D2C954A6FCBE5F2F6582C16875C6DCFF646
+              C91B22B95CEE806DDBE28776B567E4C1B99770EEFB941D64DF1091255005C0A4
+              4BC22824FF1572E8E405A88A7BE25C389E736A2C485500F800D767F1D9038CD3
+              EDA991B106538ED56A3517A5BCC6B9AD8452013334462AF956ABF50CC705CA41
+              D98BB6F8E193BC32640DF0AD181F32E2ED2CACCCE7703C15E366B3B9AFD168FC
+              E4E7A123DB0283B0E1BAEE5CB55AFD46ED0B7681272873D9CAF8879216506680
+              2873F197A69402465C84118F280725FC5D8074CA9C5A1A6C7F8FC36A8F612B60
+              E0321F9601DA63FC2D10A4CC87A54F7B8CB5050297F9B084D61EA88075DC86EE
+              A78C14A23D70FBBD4C1980A9A9BF59DA4017D66512E30000000049454E44AE42
+              6082}
+            FileName = 
+              'C:\Users\Mika\Documents\Delphi_Projects\PDFIUM-FMX\img\bookmark_' +
+              'entry_node.png'
+          end>
+        Name = 'Bookmark Entry Node'
+      end
+      item
+        MultiResBitmap.Height = 64
+        MultiResBitmap.Width = 64
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 64
+            Height = 64
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000040000000400806000000AA6971
+              DE000000017352474200AECE1CE90000000467414D410000B18F0BFC61050000
+              032C49444154785EED9BBD6FD34018C6E37CB03075898009CA5066A40C4C0824
+              102C65674F644B110B4B1714656263409162253BFF020884D48D25AC880E2D9D
+              522943A74E6D12F3BEF2D3900FDFD9E79CF3C1DD4F8ADE7BCFB573EF73778F33
+              5C9D9C22B55AED51A150F844CDBB61CFC6703A1A8D5E773A9D1FC8139158807A
+              BD7E8FBEE004E9464313B4DB6AB5FE2095924794E2BAEEBB6D299EE1B1F29891
+              4A29200AF13CAFE638CE07A45B038DF949A55239EBF57A3FD11589740B341A8D
+              FC60301821DD4ACAE572A1D96C8E912E20DD02FD7EFF14CDAD25AE06E90AA0E5
+              1FA019C5E5783C7E434BED0CF95A0882E0763E9FFF48CD1B61CF22ED765B58A7
+              F002BDEE5E909B7E463A037DE937DFF79F23DD08C8F4BED2643C433A0399E24B
+              7A3D7E413A83700BD0C3DEA2B9C0A615CFC8C624AB4528002DEF5D34B71E592D
+              897E07FCCF5801108DC50A80682C56004463B102201A8B1500D158AC0088C662
+              054034162B00A2B15801108DC50A80682C56004463B102201A8B1500D158AC00
+              88C66205403496B50AE0BAEE53FE205D0B6B11C0F3BCC77CFEC8719CEFFCE136
+              F7E1F24A59B90034E37C6EEF30CC6638C4B595B2320168867730EB0FD1B5005F
+              C36AD84157E6AC44002AE83D85F3304BC439EEC99CCC05A0657D41E120CC9438
+              C0BD999299003483D74677135DCAF0BDFC0C7E16BAB493890012A34B4B6606A9
+              55009AA958A39BE28A8FB0E218EB55D825262B83D426000D2CB1D10541E053E1
+              93B3BDDCE63EA4716835482D02A818DD7038BCE3FBBE877402F7F135A4716833
+              C8A504A0995031BA235EEEDD6E5778BA9CAF614B1C853D627419646A01548C8E
+              96F72B2AEC01D258F86FF91EA4712C6590C2E3F2D56AF5B8582C461D32E6FF21
+              10DE37071B9DF01C7F1268862F2994C22C96C8B1D1D63AA1D5751FE90C695640
+              A2E2E78D2E2DFC0C05834C3A3113B4BD05A611195D5A140D5209DD02C41A5D5A
+              540C52056D02A81A5D5AF83B140C3216E19E9198E03C4B1B5D5A921AA46E139C
+              A0CBE8D2C2DFAD6090910805A0D9FF856624BA8D2E2D490C52568BF4B5C1BFB4
+              D09C868D2EF3BD9E061AEF6F0A7B61F60F1AAFB04EE91628954AB7D0BC667F53
+              8B6730B6FD300B89A8618A5CEE2FAC7E45F2D9699EA30000000049454E44AE42
+              6082}
+            FileName = 
+              'C:\Users\Mika\Documents\Delphi_Projects\PDFIUM-FMX\img\bookmark_' +
+              'entry_item.png'
+          end>
+        Name = 'Bookmark Entry Item'
+      end
+      item
+        MultiResBitmap.Height = 64
+        MultiResBitmap.Width = 64
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 64
+            Height = 64
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000040000000400806000000AA6971
+              DE000000017352474200AECE1CE90000000467414D410000B18F0BFC61050000
+              027A49444154785EED9B6D4EC24014005BC235F44A1AEF4002A7504F010967D0
+              E895F41A24D869F69120D8EEC77BFBA1CE9F764960DF8C504C48FBCEB15EAFDF
+              FABEBF73CBEE783C3EED76BB67B76C9AC1ED71707B724BDCDE07B77BCEC7009B
+              CDE6C8F13B87C3E173BFDFDFBA6593AC56AB8FE57279E396676CB7DBBE1FEABC
+              0C751EDC6317B41C614A1E8677C2EB624A1E78015EC82D9B614E1E705FB8F349
+              5A8BE0232F780580562284C8C382ABBD3B9FA5F608A1F2B88FDF02A14FACF1C2
+              18EB70FA3FA0E50829B39F02408B1152673E0B002D45D098F52200B410416BC6
+              AB01A0E6089AB3FD18006A8CA03DD36400A82982C52CB301A086085633780580
+              92112CF7F60E00252258EF1914007246C8B1577000C83158AED05101C072C09C
+              EFB2E8006031684E79480A009A03E79687E400A0317809795009002902A5E441
+              2D00C488702C250FAA0120344208DAF2A01E002C2258C8834900D08C60250F66
+              01402382A53C9806809408D6F2601E006222E49007EF9FC67E2BFF1F017734E1
+              4F5F0435E405CB08260134E505AB08EA012CE4058B08AA0142E511E218FA1CCD
+              086A0162E44524E5B9A9A804D0102815213980E6E025222405B018387784E800
+              9683E68C101520C780B9220407C8F9D7C9B15750809CF282F59EDE014AC80B96
+              7B7B0528292F58CD301BA00679C16296C90035C90BDA33FD18A046794173B6AB
+              016A9617B466BC08D082BCA031EB598096E485D4994F015A941752661F03B42C
+              2FC43A70DBDCD94D8573D4282F8446E096196E9BFB15F2C06CCCE896B3E0EEFD
+              D358EDF2426804AF00ADC80B2111B86DEED59D5FA53579C12702EEE3B7C05FBE
+              797AFC087032D4781F1F7570856C5D1E70C0C52D4770C5B9EBBAEE0B881059D4
+              F2770D5C0000000049454E44AE426082}
+            FileName = 'C:\Users\Mika\Documents\Delphi_Projects\PDFIUM-FMX\img\close.png'
+          end>
+        Name = 'Close'
       end>
     Destination = <
       item
         Layers = <
           item
             Name = 'Left Chevron'
-            SourceRect.Left = 4.000000000000000000
-            SourceRect.Top = 4.000000000000000000
+            SourceRect.Left = 8.000000000000000000
+            SourceRect.Top = 6.000000000000000000
             SourceRect.Right = 20.000000000000000000
-            SourceRect.Bottom = 20.000000000000000000
+            SourceRect.Bottom = 18.000000000000000000
           end>
       end
       item
         Layers = <
           item
             Name = 'Right Chevron'
-            SourceRect.Left = 4.000000000000000000
-            SourceRect.Top = 4.000000000000000000
+            SourceRect.Left = 8.000000000000000000
+            SourceRect.Top = 6.000000000000000000
             SourceRect.Right = 20.000000000000000000
-            SourceRect.Bottom = 20.000000000000000000
+            SourceRect.Bottom = 18.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'Bookmark Sidebar Open'
+            SourceRect.Right = 64.000000000000000000
+            SourceRect.Bottom = 64.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'Bookmark Entry Node'
+            SourceRect.Right = 64.000000000000000000
+            SourceRect.Bottom = 64.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'Bookmark Entry Item'
+            SourceRect.Right = 64.000000000000000000
+            SourceRect.Bottom = 64.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'Close'
+            SourceRect.Right = 64.000000000000000000
+            SourceRect.Bottom = 64.000000000000000000
           end>
       end>
     Left = 200

@@ -432,7 +432,7 @@ object FileViewForm: TFileViewForm
       object APITest: TButton
         Position.X = 424.000000000000000000
         Position.Y = 8.000000000000000000
-        TabOrder = 3
+        TabOrder = 4
         Text = 'API_Test'
         OnClick = APITestClick
       end
@@ -442,7 +442,7 @@ object FileViewForm: TFileViewForm
         Size.Width = 275.000000000000000000
         Size.Height = 33.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 4
+        TabOrder = 5
       end
     end
   end
@@ -499,8 +499,8 @@ object FileViewForm: TFileViewForm
     Images = ImageList
     OnHeaderClick = StringGridHeaderClick
     OnCellClick = StringGridCellClick
-    Viewport.Width = 1027.000000000000000000
-    Viewport.Height = 635.000000000000000000
+    Viewport.Width = 1023.000000000000000000
+    Viewport.Height = 610.000000000000000000
     object GlyphColumn: TGlyphColumn
       ReadOnly = True
       Size.Width = 33.000000000000000000

@@ -22,7 +22,7 @@ object LogForm: TLogForm
     DefaultItemStyles.GroupHeaderStyle = ''
     DefaultItemStyles.GroupFooterStyle = ''
     OnChange = ListBoxChange
-    Viewport.Width = 408.000000000000000000
-    Viewport.Height = 682.000000000000000000
+    Viewport.Width = 412.000000000000000000
+    Viewport.Height = 686.000000000000000000
   end
 end

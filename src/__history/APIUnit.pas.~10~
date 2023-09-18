@@ -46,6 +46,22 @@ begin
   end;
 end;
 
+procedure awaitString(var holder : String);
+var
+	tohold : string;
+begin
+	log('Created Await Thread');
+	tohold := holder;
+	TThread.CreateAnonymousThread(procedure
+                                begin
+                                	tohold := '';
+                                 repeat
+                                   sleep(1);
+                                 until (tohold <> '');
+                                end);
+  log('Reached End of Await Thread');                              
+end;
+
 function stringFromAPI(field : string): String;
 var
 res : string;
