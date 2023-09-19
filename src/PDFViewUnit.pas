@@ -89,7 +89,7 @@ uses logUnit, FMX.Platform, FMX.BehaviorManager, FileView;
 //HELPERS
 procedure TPDFViewForm.log(const text: string);
 begin
-  LogForm.ListBox.Items.Add(text);
+  LogForm.log(text);
 end;
 
 
@@ -262,6 +262,7 @@ begin
       SearchStart := -1;
       SearchEnd := -1;
 
+			log('Current search index: ' + IntToStr(FoundIndex));
       while (FoundIndex = -1) and (FPdf.PageNumber < FPdf.PageCount) do
       begin
         ProgressBar.Value := ProgressBar.Value + 1;
@@ -558,6 +559,9 @@ begin
   Selecting := False;
   SelectionStart := -1;
   SelectionEnd := -1;
+  SearchStart := -1;
+  SearchEnd := -1;
+
 
   PageEdit.Text := IntToStr(FPdfView.PageNumber);
   Zoom;

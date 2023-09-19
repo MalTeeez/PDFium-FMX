@@ -5,12 +5,11 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Layouts,
-  FMX.ListBox;
+  FMX.ListBox, FMX.Memo.Types, FMX.Controls.Presentation, FMX.ScrollBox, FMX.Memo;
 
 type
   TLogForm = class(TForm)
-    ListBox: TListBox;
-    procedure FormCreate(Sender: TObject);
+    Memo: TMemo;
     procedure ListBoxChange(Sender: TObject);
   private
     { Private-Deklarationen }
@@ -28,17 +27,12 @@ implementation
 
 procedure TLogForm.log(text : string);
 begin
-  ListBox.Items.Add(text);
-end;
-
-procedure TLogForm.FormCreate(Sender: TObject);
-begin
-  ListBox.AniCalculations.Animation := true;
+  Memo.Lines.Add(text);
 end;
 
 procedure TLogForm.ListBoxChange(Sender: TObject);
 begin
-  ListBox.ScrollToItem(ListBox.ListItems[ListBox.Count]);
+  Memo.ScrollBy(-MaxInt, -MaxInt, true);
 end;
 
 end.
