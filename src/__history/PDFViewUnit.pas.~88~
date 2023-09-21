@@ -8,7 +8,7 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   Winsoft.FireMonkey.PDFium, FMX.Layouts, FMX.ListBox, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Objects, System.ImageList, FMX.ImgList, System.IOUtils, FMX.Edit, FMX.EditBox, FMX.NumberBox,
-  FMX.TreeView, System.Generics.Collections, System.Math, FMX.Ani, FMX.Effects;
+  FMX.TreeView, System.Generics.Collections, System.Math, FMX.Ani;
 
 type
   TPDFViewForm = class(TForm)
@@ -43,8 +43,6 @@ type
     FullSearchPreviousButton: TButton;
     FullSearchNextButton: TButton;
     FullSearchStartButton: TButton;
-    SearchShadowEffect: TShadowEffect;
-    HeaderShadowEffect: TShadowEffect;
     procedure FPdfViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Single);
     procedure FPdfViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
@@ -84,7 +82,7 @@ type
     SearchEnd				: Integer;
     SearchLocation  : Integer;
     SearchRunning		: Boolean;
-    SearchMatchPair : TPair<String, Integer>;
+    SearchMatchCount 			: Integer;
     procedure Zoom;
     procedure log(const text: string);
     function searchPDFContents(searchText : String): Integer;
@@ -163,7 +161,7 @@ begin
   SelectionStart := -1;
   SelectionEnd := -1;
 
-  SearchMatchPair := TPair<String, Integer>.Create('', -1);
+  SearchMatchCount := -1;
   FPdfView.Enabled := false;
   FPdf.Active := false;
 
@@ -320,86 +318,72 @@ begin
   begin
     log('started new search for: ' + searchText + 'with SR: ' + SearchRunning.ToString());
   	SearchRunning := true;
-    if (SearchMatchPair.Key <> searchText) then
-    begin
-    	SearchMatchPair.Create(searchText,searchPDFContents(searchText));
-      SearchLocation := 0;
-    end;
+    if (SearchMatchCount = -1) then
+    	SearchMatchCount := searchPDFContents(searchText);
 
-    if (SearchMatchPair.Value > 0) then
-    begin
-			try
-				FPdf.PageNumber := FPdfView.PageNumber;
-				if SearchStart = -1 then
-				begin
-					FoundIndex := FPdf.FindFirst(searchText, []);
-				end
-				else if (directionInvert) then
-				begin
-					FoundIndex := FPdf.FindPrevious();
-				end
-				else
-				begin
-					FoundIndex := FPdf.FindNext();
-				end;
+    try
+      FPdf.PageNumber := FPdfView.PageNumber;
+      if SearchStart = -1 then
+      begin
+        FoundIndex := FPdf.FindFirst(searchText, []);
+        SearchLocation := 1;
+      end
+      else if (directionInvert) then
+      begin
+        FoundIndex := FPdf.FindPrevious();
+      end else
+      begin
+        FoundIndex := FPdf.FindNext();
+      end;
 
-				SearchStart := -1;
-				SearchEnd := -1;
+      SearchStart := -1;
+      SearchEnd := -1;
 
-				log('Current search index: ' + IntToStr(FoundIndex));
-				while (FoundIndex = -1) do
-				begin
-					Application.ProcessMessages;
-					if Cancel then
-						Break;
+			log('Current search index: ' + IntToStr(FoundIndex));
+      while (FoundIndex = -1) do
+      begin
+        Application.ProcessMessages;
+        if Cancel then
+          Break;
 
-					if (directionInvert) then
-					begin
-						if (FPdf.PageNumber - 1 > 1) then
-							FPdf.PageNumber := FPdf.PageNumber - 1
-						else
-						begin
-							FPdf.PageNumber := FPdf.PageCount;
-							SearchLocation := SearchLocation;
-						end;
-					end
-					else
-					begin
-						if (FPdf.PageCount > FPdf.PageNumber) then
-							FPdf.PageNumber := FPdf.PageNumber + 1
-						else
-							FPdf.PageNumber := 1;
-					end;
+        if (directionInvert) then
+        begin
+          if (FPdf.PageNumber - 1 > 1) then
+          	FPdf.PageNumber := FPdf.PageNumber - 1
+          else
+            FPdf.PageNumber := FPdf.PageCount;
+        end else
+        begin
+          if (FPdf.PageCount > FPdf.PageNumber) then
+          	FPdf.PageNumber := FPdf.PageNumber + 1
+          else
+            FPdf.PageNumber := 1;
+        end;
 
-          //TODO: I have no idea how to start search at end of page (need full search logic (fpdf code))
-					FoundIndex := FPdf.FindFirst(searchText, []);
-				end;
+        FoundIndex := FPdf.FindFirst(searchText, []);
+      end;
 
-				if FoundIndex <> -1 then
-				begin
-					if (directionInvert) then
-						SearchLocation := SearchLocation - 1
-					else
-						SearchLocation := SearchLocation + 1;
+      if FoundIndex <> -1 then
+      begin
+        if (directionInvert) then
+        	SearchLocation := SearchLocation - 1
+        else
+          SearchLocation := SearchLocation + 1;
 
-					FPdfView.PageNumber := FPdf.PageNumber;
-					SearchStart := FoundIndex;
-					SearchEnd := FoundIndex + Length(searchText) - 1;
-          FullSearchLabel.Text := SearchLocation.ToString + ' von '+ SearchMatchPair.Value.ToString;
-					FPdfView.Repaint;
-				end
-				else
-				begin
-					FPdfView.Repaint;
-					if (not(Cancel)) or (SearchMatchPair.Value = 0) then // Uselessly Redundant
-						FullSearchLabel.text := 'Keine Ergebnisse';
-				end;
-			finally
-				SearchRunning := False;
-			end;
-    end else
-    begin
-      FullSearchLabel.text := 'Keine Ergebnisse';
+      	FullSearchLabel.Text := SearchLocation.ToString + ' von '+ SearchMatchCount.ToString;
+        FPdfView.PageNumber := FPdf.PageNumber;
+        SearchStart := FoundIndex;
+        SearchEnd := FoundIndex + Length(searchText) - 1;
+        FPdfView.Repaint;
+      end
+      else
+      begin
+        FPdfView.Repaint;
+        if (not (Cancel)) or (SearchMatchCount = 0) then
+          FullSearchLabel.Text := 'Keine Ergebnisse';
+      end;
+    finally
+    	SearchRunning := false;
     end;
   end
 end;
@@ -442,16 +426,9 @@ begin
   	FullSearchEdit.Text := SearchEdit.Text;
     SearchEdit.Visible := false;
   	SearchPanel.Visible := true;
-    FPdfView.Margins.Top := SearchPanel.Height;
-    FPdfView.Repaint;
     searchDocument(FullSearchEdit.Text, true);
   end else
-  begin
     FullSearchCloseClick(PDFViewForm);
-    SearchMatchPair.Create('',-1);
-    FPdf.ReloadPage;
-    FPdfView.Repaint;
-  end;
 end;
 
 procedure TPDFViewForm.SearchEditChangeTracking(Sender: TObject);
@@ -672,8 +649,6 @@ procedure TPDFViewForm.FullSearchCloseClick(Sender: TObject);
 begin
   SearchEdit.Text := FullSearchEdit.Text;
   SearchPanel.Visible := false;
-  FPdfView.Margins.Top := 0;
-  FPdfView.Repaint;
   SearchEdit.Visible := true;
 end;
 

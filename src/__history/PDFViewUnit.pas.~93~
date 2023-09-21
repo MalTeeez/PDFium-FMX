@@ -8,7 +8,7 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   Winsoft.FireMonkey.PDFium, FMX.Layouts, FMX.ListBox, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Objects, System.ImageList, FMX.ImgList, System.IOUtils, FMX.Edit, FMX.EditBox, FMX.NumberBox,
-  FMX.TreeView, System.Generics.Collections, System.Math, FMX.Ani, FMX.Effects;
+  FMX.TreeView, System.Generics.Collections, System.Math, FMX.Ani;
 
 type
   TPDFViewForm = class(TForm)
@@ -43,8 +43,6 @@ type
     FullSearchPreviousButton: TButton;
     FullSearchNextButton: TButton;
     FullSearchStartButton: TButton;
-    SearchShadowEffect: TShadowEffect;
-    HeaderShadowEffect: TShadowEffect;
     procedure FPdfViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Single);
     procedure FPdfViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);

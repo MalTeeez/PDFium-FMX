@@ -8,7 +8,7 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   Winsoft.FireMonkey.PDFium, FMX.Layouts, FMX.ListBox, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Objects, System.ImageList, FMX.ImgList, System.IOUtils, FMX.Edit, FMX.EditBox, FMX.NumberBox,
-  FMX.TreeView, System.Generics.Collections, System.Math, FMX.Ani, FMX.Effects;
+  FMX.TreeView, System.Generics.Collections, System.Math, FMX.Ani;
 
 type
   TPDFViewForm = class(TForm)
@@ -43,8 +43,7 @@ type
     FullSearchPreviousButton: TButton;
     FullSearchNextButton: TButton;
     FullSearchStartButton: TButton;
-    SearchShadowEffect: TShadowEffect;
-    HeaderShadowEffect: TShadowEffect;
+    NumberBox1: TNumberBox;
     procedure FPdfViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Single);
     procedure FPdfViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
@@ -323,7 +322,6 @@ begin
     if (SearchMatchPair.Key <> searchText) then
     begin
     	SearchMatchPair.Create(searchText,searchPDFContents(searchText));
-      SearchLocation := 0;
     end;
 
     if (SearchMatchPair.Value > 0) then
@@ -371,8 +369,7 @@ begin
 							FPdf.PageNumber := 1;
 					end;
 
-          //TODO: I have no idea how to start search at end of page (need full search logic (fpdf code))
-					FoundIndex := FPdf.FindFirst(searchText, []);
+					FoundIndex := FPdf.FindFirst(searchText, [], trunc(NumberBox1.Value), directionInvert);
 				end;
 
 				if FoundIndex <> -1 then
@@ -385,7 +382,6 @@ begin
 					FPdfView.PageNumber := FPdf.PageNumber;
 					SearchStart := FoundIndex;
 					SearchEnd := FoundIndex + Length(searchText) - 1;
-          FullSearchLabel.Text := SearchLocation.ToString + ' von '+ SearchMatchPair.Value.ToString;
 					FPdfView.Repaint;
 				end
 				else
@@ -442,8 +438,6 @@ begin
   	FullSearchEdit.Text := SearchEdit.Text;
     SearchEdit.Visible := false;
   	SearchPanel.Visible := true;
-    FPdfView.Margins.Top := SearchPanel.Height;
-    FPdfView.Repaint;
     searchDocument(FullSearchEdit.Text, true);
   end else
   begin
@@ -672,8 +666,6 @@ procedure TPDFViewForm.FullSearchCloseClick(Sender: TObject);
 begin
   SearchEdit.Text := FullSearchEdit.Text;
   SearchPanel.Visible := false;
-  FPdfView.Margins.Top := 0;
-  FPdfView.Repaint;
   SearchEdit.Visible := true;
 end;
 

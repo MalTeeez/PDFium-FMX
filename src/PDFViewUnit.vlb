@@ -23,9 +23,6 @@ ExplicitSubNodes=Opacity
 [FPdfView]
 Coordinates=188,454,69,36
 
-[ScrollBox]
-Coordinates=109,454,69,36
-
 [BookmarkClose]
 Coordinates=713,10,105,58
 
@@ -64,6 +61,12 @@ ExplicitSubNodes=Opacity
 Coordinates=58,405,42,36
 
 []
-Coordinates=850,30,134,36
+Coordinates=225,175,86,58
 Visible=True
+
+[SearchLine]
+Coordinates=126,395,80,36
+
+[SearchEdit]
+Coordinates=0,0,77,58
 

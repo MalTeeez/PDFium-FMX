@@ -113,7 +113,7 @@ object FileViewForm: TFileViewForm
       TextSettings.Font.Size = 16.000000000000000000
       TextSettings.FontColor = claSlategray
       Text = 'Search in...'
-      TabOrder = 3
+      TabOrder = 5
     end
     object BackImage: TImage
       MultiResBitmap.Height = 40
@@ -360,6 +360,22 @@ object FileViewForm: TFileViewForm
       TextSettings.WordWrap = False
       TabOrder = 2
     end
+    object APITest: TButton
+      Position.X = 424.000000000000000000
+      Position.Y = 8.000000000000000000
+      TabOrder = 3
+      Text = 'API_Test'
+      Visible = False
+      OnClick = APITestClick
+    end
+    object Label1: TLabel
+      Position.X = 512.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 275.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 4
+    end
     object RefreshButton: TPath
       Align = MostRight
       Data.Path = {
@@ -414,13 +430,6 @@ object FileViewForm: TFileViewForm
       OnClick = RefreshButtonClick
       OnMouseEnter = RefreshButtonMouseEnter
       OnMouseLeave = RefreshButtonMouseLeave
-    end
-    object HeaderShadowEffect: TShadowEffect
-      Distance = 2.000000000000000000
-      Direction = 45.000000000000000000
-      Softness = 0.800000011920929000
-      Opacity = 0.200000002980232200
-      ShadowColor = claBlack
     end
   end
   object StringGrid: TStringGrid
@@ -34302,11 +34311,6 @@ object FileViewForm: TFileViewForm
       TextSettings.Font.Size = 16.000000000000000000
       OnClick = SearchCloseClick
     end
-    object LoadingShadowEffect: TShadowEffect
-      Softness = 0.800000011920929000
-      Opacity = 0.250000000000000000
-      ShadowColor = claBlack
-    end
   end
   object DebugPanel: TPanel
     Margins.Left = 2.000000000000000000
@@ -34323,7 +34327,7 @@ object FileViewForm: TFileViewForm
     object NumberBox1: TNumberBox
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Align = MostTop
-      TabOrder = 7
+      TabOrder = 5
       Cursor = crIBeam
       Min = -350.000000000000000000
       Max = 350.000000000000000000
@@ -34344,7 +34348,7 @@ object FileViewForm: TFileViewForm
     object NumberBox2: TNumberBox
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Align = MostTop
-      TabOrder = 8
+      TabOrder = 6
       Cursor = crIBeam
       Min = -350.000000000000000000
       Max = 350.000000000000000000
@@ -34386,7 +34390,7 @@ object FileViewForm: TFileViewForm
     object NumberBox4: TNumberBox
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Align = MostTop
-      TabOrder = 5
+      TabOrder = 3
       Cursor = crIBeam
       Min = -350.000000000000000000
       Max = 350.000000000000000000
@@ -34407,7 +34411,7 @@ object FileViewForm: TFileViewForm
     object NumberBox5: TNumberBox
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Align = MostTop
-      TabOrder = 6
+      TabOrder = 4
       Cursor = crIBeam
       Min = -350.000000000000000000
       Max = 350.000000000000000000
@@ -34449,7 +34453,7 @@ object FileViewForm: TFileViewForm
     object NumberBox7: TNumberBox
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Align = MostTop
-      TabOrder = 9
+      TabOrder = 7
       Cursor = crIBeam
       Min = -350.000000000000000000
       Max = 350.000000000000000000
@@ -34470,7 +34474,7 @@ object FileViewForm: TFileViewForm
     object NumberBox8: TNumberBox
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Align = MostTop
-      TabOrder = 10
+      TabOrder = 8
       Cursor = crIBeam
       Min = -350.000000000000000000
       Max = 350.000000000000000000
@@ -34487,22 +34491,6 @@ object FileViewForm: TFileViewForm
       Size.PlatformDefault = False
       StyledSettings = [Size, Style, FontColor]
       OnChange = NumberBox1Change
-    end
-    object APITest: TButton
-      Position.X = 169.000000000000000000
-      Position.Y = 8.000000000000000000
-      TabOrder = 3
-      Text = 'API_Test'
-      Visible = False
-      OnClick = APITestClick
-    end
-    object Label1: TLabel
-      Position.X = 512.000000000000000000
-      Position.Y = 8.000000000000000000
-      Size.Width = 275.000000000000000000
-      Size.Height = 33.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 4
     end
   end
   object ImageList: TImageList

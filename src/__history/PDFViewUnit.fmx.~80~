@@ -178,22 +178,16 @@ object PDFViewForm: TPDFViewForm
       TextSettings.Font.Size = 16.000000000000000000
       OnClick = SearchButtonClick
     end
-    object HeaderShadowEffect: TShadowEffect
-      Direction = 45.000000000000000000
-      Softness = 0.800000011920929000
-      Opacity = 0.100000001490116100
-      ShadowColor = claBlack
-    end
   end
   object ScrollBox: TVertScrollBox
     Align = Client
-    Size.Width = 776.000000000000000000
+    Size.Width = 612.000000000000000000
     Size.Height = 474.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 4
     OnMouseWheel = ScrollBoxMouseWheel
     ShowSizeGrip = True
-    Viewport.Width = 776.000000000000000000
+    Viewport.Width = 612.000000000000000000
     Viewport.Height = 474.000000000000000000
     object FPdfView: TFPdfView
       Align = Center
@@ -214,7 +208,6 @@ object PDFViewForm: TPDFViewForm
     Size.Height = 474.000000000000000000
     Size.PlatformDefault = False
     StyleLookup = 'pushpanel'
-    Visible = False
     TabOrder = 2
     object BookmarkLabel: TLabel
       Align = MostTop
@@ -286,7 +279,6 @@ object PDFViewForm: TPDFViewForm
     Stroke.Thickness = 10.000000000000000000
     Stroke.Cap = Round
     Stroke.Join = Round
-    Visible = False
     XRadius = 6.000000000000000000
     YRadius = 6.000000000000000000
     object FullSearchEdit: TEdit
@@ -548,13 +540,6 @@ object PDFViewForm: TPDFViewForm
       TabOrder = 1
       Text = 'Button1'
       OnClick = FullSearchNextButtonClick
-    end
-    object SearchShadowEffect: TShadowEffect
-      Distance = 2.500000000000000000
-      Direction = 90.000000000000000000
-      Softness = 0.300000011920929000
-      Opacity = 0.300000011920929000
-      ShadowColor = claBlack
     end
   end
   object FPdf: TFPdf
