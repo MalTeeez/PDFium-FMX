@@ -463,8 +463,8 @@ object FileViewForm: TFileViewForm
     Images = ImageList
     OnHeaderClick = StringGridHeaderClick
     OnCellClick = StringGridCellClick
-    Viewport.Width = 791.000000000000000000
-    Viewport.Height = 524.000000000000000000
+    Viewport.Width = 795.000000000000000000
+    Viewport.Height = 549.000000000000000000
     object GlyphColumn: TGlyphColumn
       ReadOnly = True
       Size.Width = 33.000000000000000000
@@ -34241,7 +34241,6 @@ object FileViewForm: TFileViewForm
     Size.Height = 78.000000000000000000
     Size.PlatformDefault = False
     StyleLookup = 'panelstyle'
-    Visible = False
     TabOrder = 13
     object SearchBar: TProgressBar
       Align = MostTop

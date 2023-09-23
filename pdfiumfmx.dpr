@@ -6,7 +6,8 @@ uses
   APIUnit in 'src\APIUnit.pas',
   FileView in 'src\FileView.pas' {FileViewForm},
   logUnit in 'src\logUnit.pas' {LogForm},
-  PDFViewUnit in 'src\PDFViewUnit.pas' {PDFViewForm};
+  PDFViewUnit in 'src\PDFViewUnit.pas' {PDFViewForm},
+  WorkerThread in 'src\WorkerThread.pas';
 
 {$R *.res}
 

@@ -47,8 +47,6 @@ type
     HeaderShadowEffect: TShadowEffect;
     SearchPanelAniIn: TFloatAnimation;
     SearchPanelAniOut: TFloatAnimation;
-    BookmarkPanelAniIn: TFloatAnimation;
-    BookmarkPanelAniOut: TFloatAnimation;
     procedure FPdfViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y: Single);
     procedure FPdfViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
@@ -68,6 +66,7 @@ type
     procedure eventHostItemClick(Sender: TObject);
     procedure PageEditChange(Sender: TObject);
     procedure BookmarkButtonClick(Sender: TObject);
+    procedure FloatAnimationCloseFinish(Sender: TObject);
     procedure SearchEditChangeTracking(Sender: TObject);
     procedure SearchEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char;
       Shift: TShiftState);
@@ -77,10 +76,6 @@ type
     procedure FullSearchNextButtonClick(Sender: TObject);
     procedure FullSearchPreviousButtonClick(Sender: TObject);
     procedure SearchPanelAniOutFinish(Sender: TObject);
-    procedure BookmarkPanelAniOutFinish(Sender: TObject);
-    procedure BookmarkPanelAniInFinish(Sender: TObject);
-    procedure FullSearchEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char;
-      Shift: TShiftState);
   private
     { Private-Deklarationen }
     Selecting				: Boolean;
@@ -281,7 +276,6 @@ begin
       PointsToPixels(Zoom * PdfPageWidth, PixelsPerInch),
       PointsToPixels(Zoom * PdfPageHeight, PixelsPerInch));
   end;
-  FPdfView.Repaint;
 end;
 
 procedure OSExecute(const ACommand: string);
@@ -366,12 +360,14 @@ begin
 					begin
 						if (FPdf.PageNumber - 1 > 1) then
 							FPdf.PageNumber := FPdf.PageNumber - 1
-						else begin
+						else
+						begin
 							FPdf.PageNumber := FPdf.PageCount;
 							SearchLocation := SearchLocation;
 						end;
 					end
-					else begin
+					else
+					begin
 						if (FPdf.PageCount > FPdf.PageNumber) then
 							FPdf.PageNumber := FPdf.PageNumber + 1
 						else
@@ -448,7 +444,7 @@ begin
   begin
   	FullSearchEdit.Text := SearchEdit.Text;
     SearchEdit.Visible := false;
-  	SearchPanel.Visible := true;
+  	SearchPanelAniOut.Start;
     //FPdfView.Margins.Top := SearchPanel.Height;
     FPdfView.Repaint;
     searchDocument(FullSearchEdit.Text, true);
@@ -483,15 +479,13 @@ end;
 procedure TPDFViewForm.SearchPanelAniOutFinish(Sender: TObject);
 begin
   SearchPanel.Visible := false;
-  FPdfView.Repaint;
-  SearchEdit.Visible := true;
 end;
 
 procedure TPDFViewForm.BookmarkButtonClick(Sender: TObject);
 begin
   if (BookmarkPanel.Visible) then
   begin
-    BookmarkPanelAniOut.Start;
+    BookmarkPanel.Visible := false;
   end else
   begin
     BookmarkPanel.Visible := true;
@@ -518,14 +512,15 @@ begin
   FPdfView.PageNumber := TTreeViewItem(Sender).Tag;
 end;
 
-procedure TPDFViewForm.BookmarkPanelAniInFinish(Sender: TObject);
+procedure TPDFViewForm.FloatAnimationCloseFinish(Sender: TObject);
 begin
-  Zoom;
-end;
-
-procedure TPDFViewForm.BookmarkPanelAniOutFinish(Sender: TObject);
-begin
-  BookmarkPanel.Visible := false;
+	if (BookmarkPanel.Tag = 1) then
+  begin
+    BookmarkPanel.Visible := false;
+  end else
+  begin
+    BookmarkPanel.Visible := false;
+  end;
   Zoom;
 end;
 
@@ -687,15 +682,8 @@ begin
   //SearchPanel.Visible := false;
   SearchPanelAniOut.Start;
   //FPdfView.Margins.Top := 0;
-end;
-
-procedure TPDFViewForm.FullSearchEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char;
-  Shift: TShiftState);
-begin
-if Key = 13 then
-  begin
-    FullSearchNextButtonClick(PDFViewForm);
-  end;
+  FPdfView.Repaint;
+  SearchEdit.Visible := true;
 end;
 
 procedure TPDFViewForm.FullSearchNextButtonClick(Sender: TObject);

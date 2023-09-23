@@ -2,7 +2,7 @@
 Coordinates=406,386,106,58
 
 [FileViewForm.RESTResponse1]
-Coordinates=10,10,196,366
+Coordinates=880,40,196,366
 
 [SeperatorLine]
 Coordinates=453,454,95,36
@@ -17,7 +17,7 @@ Coordinates=267,454,69,36
 Coordinates=215,386,67,58
 
 [BookmarkButton]
-Coordinates=790,130,109,80
+Coordinates=770,140,109,80
 ExplicitSubNodes=Opacity
 
 [FPdfView]
@@ -27,7 +27,7 @@ Coordinates=188,454,69,36
 Coordinates=713,10,105,58
 
 [FileViewForm.RESTRequest1]
-Coordinates=336,10,186,102
+Coordinates=870,10,186,102
 
 [PackBackButton]
 Coordinates=522,386,109,58
@@ -48,10 +48,10 @@ Coordinates=295,405,70,36
 Coordinates=756,386,69,36
 
 [FileViewForm.RESTClient1]
-Coordinates=532,10,171,80
+Coordinates=870,10,171,80
 
 [ComboBoxZoom]
-Coordinates=216,10,110,146
+Coordinates=10,90,110,146
 
 [BookmarkPanel]
 Coordinates=640,130,105,58
@@ -61,7 +61,7 @@ ExplicitSubNodes=Opacity
 Coordinates=58,405,42,36
 
 []
-Coordinates=225,175,86,58
+Coordinates=669,518,91,36
 Visible=True
 
 [SearchLine]
@@ -69,4 +69,53 @@ Coordinates=126,395,80,36
 
 [SearchEdit]
 Coordinates=0,0,77,58
+
+[WholeWordPath]
+Coordinates=225,232,108,58
+
+[MatchCaseButton]
+Coordinates=225,155,116,58
+
+[SearchButton]
+Coordinates=434,208,92,58
+
+[FullSearchClose]
+Coordinates=180,20,109,58
+
+[FullSearchLabel]
+Coordinates=434,285,108,58
+
+[FullSearchNextButton]
+Coordinates=560,200,140,58
+
+[FullSearchLine]
+Coordinates=741,87,101,36
+
+[SearchShadowEffect]
+Coordinates=560,263,134,36
+
+[FullSearchStartButton]
+Coordinates=430,30,141,58
+
+[SearchPanel]
+Coordinates=669,318,88,36
+
+[FullSearchPreviousButton]
+Coordinates=225,309,164,58
+
+[ScrollBox]
+Coordinates=109,482,69,36
+
+[WholeWordButton]
+Coordinates=580,60,119,58
+
+[HeaderShadowEffect]
+Coordinates=560,463,136,36
+
+[FullSearchEdit]
+Coordinates=434,131,99,58
+
+[SearchPanelAniIn]
+Coordinates=710,240,118,36
+Visible=True
 

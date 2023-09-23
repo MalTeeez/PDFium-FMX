@@ -1,0 +1,204 @@
+unit WorkerThread;
+
+interface
+
+uses
+  System.Classes, System.SysUtils, SyncObjs, System.Generics.Collections, IOUtils, Winsoft.FireMonkey.PDFium;
+
+type
+
+	TProgressEvent = procedure(Sender: TObject; const Position: Integer;
+		const CurrentFile: String) of object;
+
+	// This event type is used to pass back the completion of search
+	TSearchDoneEvent = procedure(Sender: TObject;
+		ItemMap: TDictionary<String, Integer>) of object;
+
+	TWorkerThread = class(TThread)
+	private
+		FPosition: Integer;
+		FCurrentFile: String;
+		FTerminateEvent: TEvent;
+    FSearchString	: String;
+    FFiles : TList<String>;
+    SearchFPDF : TFPdf;
+		FOnProgress: TProgressEvent;
+    FOnFinished: TSearchDoneEvent;
+    FResultMap : TDictionary<String, Integer>;
+    procedure InitFPDF;
+    procedure SetFiles(const Files : TList<String>);
+    procedure SetSearchString(const SearchString : String);
+		procedure TaskProgress(Sender: TObject; const Position: Integer;
+			const CurrentFile: String);
+	protected
+		procedure Execute; override;
+		procedure TerminatedSet; override;
+		procedure SYNC_OnProgress;
+    procedure SYNC_OnFinished;
+	public
+		constructor Create(ASearchString : String; AFiles : TList<String>); reintroduce;
+		destructor Destroy; override;
+    {// The Text to search docs for.
+		property SearchString: String read FSearchString write SetSearchString;
+    // The List of files to search in.
+		property Files: TList<String> read FFiles write SetFiles;}
+    // Triggered upon completion.
+		property OnFinished: TSearchDoneEvent read FOnFinished write FOnFinished;
+    // Triggered upon completion step.
+		property OnProgress: TProgressEvent read FOnProgress write FOnProgress;
+	end;
+
+function documentsThatContainText(searchString: string; Files: TList<String>;
+	 AOnProgress : TProgressEvent; SearchFPDFObject : TFPdf): TDictionary<String, Integer>;
+
+function searchPDFContents(fpath, SearchString: String; SearchFPDFObject : TFPdf): Integer;
+
+
+implementation
+
+{ TWorkerThread }
+
+constructor TWorkerThread.Create(ASearchString : String; AFiles : TList<String>);
+begin
+	inherited Create(True);
+	FTerminateEvent := TEvent.Create(nil, True, False, '');
+  FSearchString := ASearchString;
+  FFiles := AFiles;
+end;
+
+destructor TWorkerThread.Destroy;
+begin
+	inherited;
+	FTerminateEvent.Free;
+end;
+
+procedure TWorkerThread.TerminatedSet;
+begin
+	FTerminateEvent.SetEvent;
+end;
+
+procedure TWorkerThread.TaskProgress(Sender: TObject; const Position : Integer; const CurrentFile : String);
+begin
+	//Received event from long task, redirect this event through synchronize
+  FPosition := Position;
+  FCurrentFile := CurrentFile;
+  //Here we call the REAL event via synchronize, so that it runs
+  //  in the context of the main thread, not this one.
+  Synchronize(SYNC_OnProgress);
+end;
+
+// Trigger the PDFium Trial message since that's UI and has to run on the main thread
+procedure TWorkerThread.InitFPDF;
+begin
+  SearchFPDF := TFPdf.Create(nil);
+  SearchFPDF.FileName := 'blank.pdf';
+  SearchFPDF.PageNumber := 0;
+  SearchFPDF.Active := True;
+  SearchFPDF.Active := False;
+end;
+
+procedure TWorkerThread.Execute;
+begin
+  NameThreadForDebugging('search-worker');
+  FResultMap := TDictionary<String, Integer>.Create;
+  if (not Terminated) then begin
+  	try
+    	//Here is where we call the main function to download the file.
+      Synchronize(InitFPDF);
+      documentsThatContainText(FSearchString, FFiles, TaskProgress, SearchFPDF);
+  	except
+    	on E: Exception do begin
+      	//Here, you would handle any exception(s) and synchronize other events accordingly.
+      	//  In the case of this demo, I will not be handling this as it's irrelevant to the purpose.
+      	//  But you would need to make sure you handle this.
+    	end;
+  	end;
+  end;
+  FreeAndNil(SearchFPDF);
+  //Here's the important part. We SYNCHRONIZE this event to inform the calling thread
+  //  that the download has finished. You cannot trigger the event directly,
+  //  because that would in turn run in the context of THIS thread. But you need
+  //  to make sure it runs in the context of the MAIN thread.
+  Synchronize(SYNC_OnFinished);
+end;
+
+procedure TWorkerThread.SetSearchString(const SearchString : String);
+begin
+  FSearchString := SearchString;
+end;
+
+procedure TWorkerThread.SetFiles(const Files : TList<String>);
+begin
+  FFiles := Files;
+end;
+
+procedure TWorkerThread.SYNC_OnProgress();
+begin
+	if Assigned(FOnProgress) then
+  	FOnProgress(Self, FPosition, FCurrentFile);
+end;
+
+procedure TWorkerThread.SYNC_OnFinished;
+begin
+  // This is the method called from "Synchronize()". All code run from "Synchronize()"
+  //  runs in the context of the Main VCL UI Thread, NOT from this thread.
+  //  This simply triggers the event which was assigned by the calling thread
+  //  to inform it that the download has completed.
+  if Assigned(FOnFinished) then
+    FOnFinished(Self, FResultMap);
+end;
+
+function searchPDFContents(fpath, SearchString: String; SearchFPDFObject : TFPdf): Integer;
+const
+	NewLine = #13#10;
+var
+	i: Integer;
+	FileName, line: string;
+begin
+	Result := 0;
+	try
+		SearchFPDFObject.FileName := fpath;
+		SearchFPDFObject.PageNumber := 0;
+    SearchFPDFObject.Active :=	True;
+		for i := 1 to SearchFPDFObject.PageCount do
+		begin
+			SearchFPDFObject.PageNumber := i;
+			for line in SearchFPDFObject.Text.Split([NewLine]) do
+			begin
+				if (line <> '') and (line.Contains(SearchString)) then
+				begin
+					Result := Result + 1;
+				end;
+			end;
+		end;
+	finally
+		SearchFPDFObject.Active := False;
+	end;
+end;
+
+function documentsThatContainText(searchString: string; Files: TList<String>;
+	 AOnProgress : TProgressEvent; SearchFPDFObject : TFPdf): TDictionary<String, Integer>;
+var
+	FilePath: String;
+	Matches: Integer;
+begin
+	Result 	:= System.Generics.Collections.TDictionary<String, Integer>.Create;
+  Matches := 0;
+	for FilePath in Files do
+	begin
+    AOnProgress(nil, Matches, FilePath);
+		if (not TWorkerThread.CheckTerminated) then
+		begin
+      if (IOUtils.TPath.GetFileName(FilePath).Contains(searchString)) then
+        Result.Add(FilePath, 0);
+      Matches := searchPDFContents(FilePath, searchString, SearchFPDFObject);
+      if (Result.ContainsKey(FilePath)) then begin
+      	Result[FilePath] := Matches;
+      end else begin
+      	Result.Add(FilePath, Matches);
+      end;
+		end
+	end;
+end;
+
+end.

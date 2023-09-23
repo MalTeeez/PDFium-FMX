@@ -366,12 +366,14 @@ begin
 					begin
 						if (FPdf.PageNumber - 1 > 1) then
 							FPdf.PageNumber := FPdf.PageNumber - 1
-						else begin
+						else
+						begin
 							FPdf.PageNumber := FPdf.PageCount;
 							SearchLocation := SearchLocation;
 						end;
 					end
-					else begin
+					else
+					begin
 						if (FPdf.PageCount > FPdf.PageNumber) then
 							FPdf.PageNumber := FPdf.PageNumber + 1
 						else
