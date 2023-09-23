@@ -7,8 +7,7 @@ uses
 
 type
 
-	TProgressEvent = procedure(Sender: TObject; const Position: Integer;
-		const CurrentFile: String) of object;
+	TProgressEvent = procedure(Sender: TObject; const CurrentFile: String) of object;
 
 	// This event type is used to pass back the completion of search
 	TSearchDoneEvent = procedure(Sender: TObject;
@@ -28,8 +27,7 @@ type
     procedure InitFPDF;
     procedure SetFiles(const Files : TList<String>);
     procedure SetSearchString(const SearchString : String);
-		procedure TaskProgress(Sender: TObject; const Position: Integer;
-			const CurrentFile: String);
+		procedure TaskProgress(Sender: TObject; const CurrentFile: String);
 	protected
 		procedure Execute; override;
 		procedure TerminatedSet; override;
@@ -77,20 +75,17 @@ begin
 	FTerminateEvent.SetEvent;
 end;
 
-procedure TWorkerThread.TaskProgress(Sender: TObject; const Position : Integer; const CurrentFile : String);
+procedure TWorkerThread.TaskProgress(Sender: TObject; const CurrentFile : String);
 begin
-	//Received event from long task, redirect this event through synchronize
-  FPosition := Position;
+	//Received event from search task, redirect this event through synchronize
   FCurrentFile := CurrentFile;
-  //Here we call the REAL event via synchronize, so that it runs
+  //	Call the REAL event via synchronize, so that it runs
   //  in the context of the main thread, not this one.
   Synchronize(SYNC_OnProgress);
 end;
 
-// Trigger the PDFium Trial message since that's UI and has to run on the main thread
 procedure TWorkerThread.InitFPDF;
 begin
-  SearchFPDF := TFPdf.Create(nil);
   SearchFPDF.FileName := 'blank.pdf';
   SearchFPDF.PageNumber := 0;
   SearchFPDF.Active := True;
@@ -103,14 +98,13 @@ begin
   FResultMap := TDictionary<String, Integer>.Create;
   if (not Terminated) then begin
   	try
-    	//Here is where we call the main function to download the file.
+      SearchFPDF := TFPdf.Create(nil);
+      // Trigger the PDFium Trial message since that's UI and wants to run on the main thread
       Synchronize(InitFPDF);
+      //Here is where we call the main function to search our files.
       documentsThatContainText(FSearchString, FFiles, TaskProgress, SearchFPDF);
   	except
     	on E: Exception do begin
-      	//Here, you would handle any exception(s) and synchronize other events accordingly.
-      	//  In the case of this demo, I will not be handling this as it's irrelevant to the purpose.
-      	//  But you would need to make sure you handle this.
     	end;
   	end;
   end;
@@ -135,13 +129,13 @@ end;
 procedure TWorkerThread.SYNC_OnProgress();
 begin
 	if Assigned(FOnProgress) then
-  	FOnProgress(Self, FPosition, FCurrentFile);
+  	FOnProgress(Self, FCurrentFile);
 end;
 
 procedure TWorkerThread.SYNC_OnFinished;
 begin
   // This is the method called from "Synchronize()". All code run from "Synchronize()"
-  //  runs in the context of the Main VCL UI Thread, NOT from this thread.
+  //  runs in the context of the Main FMX UI Thread, NOT from this thread.
   //  This simply triggers the event which was assigned by the calling thread
   //  to inform it that the download has completed.
   if Assigned(FOnFinished) then
@@ -186,7 +180,7 @@ begin
   Matches := 0;
 	for FilePath in Files do
 	begin
-    AOnProgress(nil, Matches, FilePath);
+    AOnProgress(nil, FilePath);
 		if (not TWorkerThread.CheckTerminated) then
 		begin
       if (IOUtils.TPath.GetFileName(FilePath).Contains(searchString)) then

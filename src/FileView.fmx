@@ -34256,7 +34256,7 @@ object FileViewForm: TFileViewForm
       Size.Height = 12.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = 'progressbarstyle'
-      object FloatAnimation1: TFloatAnimation
+      object SearchBarAni: TFloatAnimation
         Duration = 0.200000002980232200
         PropertyName = 'Value'
         StartValue = 0.000000000000000000
