@@ -51,7 +51,6 @@ function documentsThatContainText(searchString: string; Files: TList<String>;
 
 function searchPDFContents(fpath, SearchString: String; SearchFPDFObject : TFPdf): Integer;
 
-function hurtCPU: Integer;
 
 implementation
 
@@ -103,9 +102,7 @@ begin
       // Trigger the PDFium Trial message since that's UI and wants to run on the main thread
       Synchronize(InitFPDF);
       //Here is where we call the main function to search our files.
-      FResultMap := documentsThatContainText(FSearchString, FFiles, TaskProgress, SearchFPDF);
-      //var res : integer;
-      //res := hurtCPU;
+      documentsThatContainText(FSearchString, FFiles, TaskProgress, SearchFPDF);
   	except
     	on E: Exception do begin
     	end;
@@ -144,23 +141,7 @@ begin
   if Assigned(FOnFinished) then
     FOnFinished(Self, FResultMap);
 end;
-{
-function hurtCPU: Integer;
-var
-	X, Z, FCountTo: Int64;
-begin
-	try
-		for X := 1 to MaxInt do
-		begin
-			if TThread.CheckTerminated then
-				Break;
-			Z := Round(X / 2);
-		end;
-	finally
-		Result := 0;
-	end;
-end;
-}
+
 function searchPDFContents(fpath, SearchString: String; SearchFPDFObject : TFPdf): Integer;
 const
 	NewLine = #13#10;
