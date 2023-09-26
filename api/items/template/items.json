@@ -1,0 +1,39 @@
+{
+  "items":  [
+    {
+      "type": "container",
+      "id": "",
+      "name": "",
+      "created_at": "",
+      "updated_at": "",
+      "file_name": "container.json",
+      "file_location": "items/template",
+      "file_size": 0,
+      "file_hash": null
+    },
+    {
+      "type": "document",
+      "id": "",
+      "name": "",
+      "created_at": "",
+      "updated_at": "",
+      "file_name": "document.json",
+      "file_location": "items/template",
+      "file_size": 0,
+      "file_hash": null
+    },
+    {
+      "type": "file",
+      "id": "",
+      "name": "",
+      "created_at": "",
+      "updated_at": "",
+      "file_name": "file.json",
+      "file_location": "items/template",
+      "file_size": 0,
+      "file_hash": null
+    }
+  ],
+  "hashsum": "",
+  "total": 0
+}

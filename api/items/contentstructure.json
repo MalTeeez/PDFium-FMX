@@ -1,0 +1,23 @@
+{
+  "id": "root",
+  "type": "container",
+  "contents":  [
+    {
+      "id": "",
+      "type": "container",
+      "contents": [
+
+      ]
+    },
+    {
+      "id": "",
+      "type": "document",
+    },
+    {
+      "id": "",
+      "type": "file",
+    }
+  ],
+  "hashsum": "",
+  "total": 0
+}

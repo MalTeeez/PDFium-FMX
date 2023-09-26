@@ -4,6 +4,7 @@
 !.gitignore
 !src/**
 !img/**
+!api/**
 !pdfiumfmx.dpr
 !pdfiumfmx.dproj
 !pdfiumfmx.identcache
