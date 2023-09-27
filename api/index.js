@@ -1,5 +1,5 @@
 // DEPENDENCIES
-import { readFileSync, existsSync, fstat, readFile } from 'fs';
+import { readFileSync, existsSync, statSync} from 'fs';
 import express from 'express';
 import crypto from 'crypto';
 const app = express();
@@ -7,19 +7,68 @@ const port = `5001`;
 import cors from 'cors';
 
 // LOAD LIBRARIES
-app.use(cors());
+app.use(cors()).use(express.json());
 
 //DECLARE GLOBAL VARS
 var items = []; 
 
-function getId(type, name, created_at) {
-    const uin8array = new TextEncoder().encode('PPRLSS::'+type+name+created_at);
-    return crypto.subtle.digest('SHA-256', uin8array);
+function removeItemById(id) {
+    items.forEach(item => {
+        if (item.id === id) {
+            const index = items.indexOf(item);
+            if (index > -1) {
+                items.splice(index, 1);
+            }
+        }
+    });
 }
 
-async function getFileHash(file) {
+function getItemById(id) {
+    items.forEach(item => {
+        if (item.id === id) {
+            const index = items.indexOf(item);
+            if (index > -1) {
+                return item;
+            }
+        }
+    });
+}
+
+function getItemsByName(name) {
+    let res = [];
+    items.forEach(item => {
+        if (item.name === name) {
+            const index = items.indexOf(item);
+            if (index > -1) {
+                res.push(item);
+            }
+        }
+    });
+    return res;
+}
+
+function addFileToItem(item, file_name, file_location) {
+    item.setFileName = file_name;
+    item.setFileLocation = file_location;
+
+    let file_path = file_location + '/' + file_name;
+    this.file_size = statSync(file_path).size;
+    getFileHash(file_path).then(hash => {
+        this.file_hash = hash;
+    });
+}
+
+async function getStringHash(type, name, created_at) {
+    const uin8array = new TextEncoder().encode('PPRLSS::'+type+name+created_at);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', uin8array);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((h) => h.toString(16).padStart(2, '0')).join('');
+}
+
+async function getFileHash(file_path) {
+    let file = readFileSync(file_path);
     //Load file from path and convert contents into UInt8Array
-    const uin8array = new Uint8Array(readFileSync(file));
+    const uin8array = new Uint8Array(file);
     //Compute sha-256 hash from UInt8Array into a new UInt8Array
     const hashBuffer = await crypto.subtle.digest('SHA-256', uin8array);
     //Convert the UInt8Array back into a bit array
@@ -28,24 +77,39 @@ async function getFileHash(file) {
     return hashArray.map((h) => h.toString(16).padStart(2, '0')).join('');
 }
 
+
 class itemObject {
-    constructor(type, name, created_at, updated_at, file_name, file_location) {
-        var obj = this;
+    constructor(type, name, created_at, updated_at, _file_name, _file_location) {
         this.type = type;
         this.name = name;
         this.created_at = created_at;
         this.updated_at = updated_at;
-        this.file_name = file_name;
-        this.file_location = file_location;
-        this.file_size = fstat(file_name);
-        this.id = getId(type, name, created_at);
-        getFileHash(file_location + '/' + file_name).then(hash => {
-            this.file_hash = hash;
+        getStringHash(type, name, created_at).then(id => {
+            this.id = id;
         });
 
-        this.toString = function () {
-            return JSON.stringify(obj);
-        };
+        if (_file_name && _file_location) {
+            this.file_name = _file_name;
+            this.file_location = _file_location;
+            
+            let file_path = file_location + '/' + file_name;
+            this.file_size = statSync(file_path).size;
+            getFileHash(file_path).then(hash => {
+                this.file_hash = hash;
+            });
+        }
+    }
+
+    setFileName(file_name) {
+        this.file_name = file_name;
+    }
+
+    setFileLocation(file_location) {
+        this.file_name = file_location;
+    }
+
+    toString() {
+        return JSON.stringify(obj);
     }
 }
 
@@ -60,7 +124,7 @@ app.get('/file', async (req, res) => {
         "pdf"
     ];
 
-    console.log('Got API Request for ' + JSON.stringify(req.query));
+    console.log('Got File API Request for ' + JSON.stringify(req.query));
     // Check if the right request is coming through for the file type
     try {
         const file = await new Promise((resolve, reject) => {
@@ -104,9 +168,12 @@ app.get('/items', async(_req, res) => {
     }
 });
 
-app.get('/items/delete', async(_req, res) => {
+app.get('/items/delete', async(req, res) => {
     try {
-        res.status(200);
+        removeItemById(req.query.id);
+        res.status(200).send({
+            message: `Item with Id ${req.query.id} was successfully deleted.`,
+        });
     } catch (e) {
         res.status(400).send({
             message: `Encountered error while processing request: ${e}`,
@@ -126,10 +193,11 @@ app.get('/items/update', async(_req, res) => {
     }
 });
 
-app.get('/items/create', async(_req, res) => {
+app.post('/items/create', async(req, res) => {
     try {
+        loadToItems(req.body);
         res.status(200).send({
-            message: ''
+            message: `Item with Name ${req.body.name} was successfully created.`,
         });
     } catch (e) {
         res.status(400).send({
