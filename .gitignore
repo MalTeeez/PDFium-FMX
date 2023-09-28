@@ -5,6 +5,7 @@
 !src/**
 !img/**
 !api/**
+api/files/**
 !pdfiumfmx.dpr
 !pdfiumfmx.dproj
 !pdfiumfmx.identcache
