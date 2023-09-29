@@ -4,16 +4,16 @@ import express from 'express';
 import crypto from 'crypto';
 import fileupload from 'express-fileupload';
 const app = express();
-const port = `5001`;
+const port = '5001';
 import cors from 'cors';
 
 //DECLARE GLOBAL VARS
 var items = []; 
-var temp_dir = 'tmp';
-var file_dir = 'files';
+const temp_dir = 'tmp';
+const file_dir = 'files';
 var last_update = -1;
 var timeout_next = 1000;
-
+const error_msg = 'Encountered error while processing request: ';
 
 // LOAD LIBRARIES
 app.use(cors()).use(express.json()).use(fileupload({
@@ -24,53 +24,112 @@ app.use(cors()).use(express.json()).use(fileupload({
 
 }));
 
-function updateTimestamp() {
+function updateTimestamp(_timeout) {
     last_update = Date.now();
-    //if (_timeout) timeout_next = _timeout;
+    if (_timeout) timeout_next = _timeout;
 }
 
+
+function getCurrentTimeString() {
+    return new Date().toLocaleString('de-DE', { hour: '2-digit', minute: '2-digit', 
+        day: '2-digit', month: '2-digit', year: 'numeric', 
+        hour12: false, timeZone: 'Europe/Athens'})
+        .replace(/\./g, '/');
+}
+
+/**
+ * Tries to remove an item by its Id
+ * @param {string} id The to be removed items Id
+ * @returns {boolean} Whether an item was deleted or not
+ */
 function removeItemById(id) {
-    items.forEach(item => {
+    for (const item of items) {
         if (item.id === id) {
             const index = items.indexOf(item);
             if (index > -1) {
                 items.splice(index, 1);
+                return true;
             }
         }
-    });
+    };
+    return false;
 }
 
+/**
+ * Tries to remove an item by its Id
+ * @param {string} id The to be found items Id
+ * @returns {*} The item if one was found, otherwise "false"
+ */
 function getItemById(id) {
-    items.forEach(item => {
+    for (const item of items) {
         if (item.id === id) {
             const index = items.indexOf(item);
             if (index > -1) {
                 return item;
             }
         }
-    });
+    };
+    return false;
 }
 
+/**
+ * Searches for items with a name
+ * @param {string} name The items name to be found
+ * @returns {*} A list of items that were found by name
+ */
 function getItemsByName(name) {
     let res = [];
-    items.forEach(item => {
+    for (const item of items) {
         if (item.name === name) {
             const index = items.indexOf(item);
             if (index > -1) {
                 res.push(item);
             }
         }
-    });
+    };
     return res;
 }
 
-async function getStringHash(type, name, created_at) {
+async function updateParamsByItemId(id, new_params) {
+    let item = getItemById(id);
+    if (item) {
+        if (new_params.type) item.setType(new_params.type);
+        if (new_params.name) item.setName(new_params.name);
+        if (new_params.created_at) item.setCreatedAt(new_params.created_at);
+        if (new_params.updated_at) item.setType(new_params.updated_at);
+        return await item.reValId();
+    } else return false;
+}
+
+function updateFileByItemId(id, file_name, file_dir, file_size, file_hash) {
+    let item = getItemById(id);
+    if (item) {
+        item.setFileName(file_name);
+        item.setFileDir(file_dir);
+        item.setFileSize(file_size);
+        item.setFileHash(file_hash);     
+    } else return false;
+}
+
+/**
+ * Generates a Paperless item Id
+ * @param {string} type 
+ * @param {string} name 
+ * @param {string} created_at 
+ * @returns {string} The Generated item Id
+ */
+async function digestID(type, name, created_at) {
     const uin8array = new TextEncoder().encode('PPRLSS::'+type+name+created_at);
     const hashBuffer = await crypto.subtle.digest('SHA-256', uin8array);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((h) => h.toString(16).padStart(2, '0')).join('');
 }
 
+/**
+ * Generates a SHA-256 hash from a file stored on disk
+ * @param {*} file Byte buffer array
+ * @returns {string} A SHA-256 hash as a string
+ */
 async function getHashFromPath(file_path) {
     let file = readFileSync(file_path);
     //Load file from path and convert contents into UInt8Array
@@ -83,6 +142,11 @@ async function getHashFromPath(file_path) {
     return hashArray.map((h) => h.toString(16).padStart(2, '0')).join('');
 }
 
+/**
+ * Generates a loaded files SHA-256 hash
+ * @param {*} file Byte buffer array
+ * @returns {string} A SHA-256 hash as a string
+ */
 async function getHashFromFile(file) {
     const uin8array = new Uint8Array(file);
     //Compute sha-256 hash from UInt8Array into a new UInt8Array
@@ -93,14 +157,26 @@ async function getHashFromFile(file) {
     return hashArray.map((h) => h.toString(16).padStart(2, '0')).join('');
 }
 
-
 class itemObject {
+    /**
+     * Creates a new item object
+     * @param {string} type Type of item, should be one of [container, document, file]
+     * @param {string} name Name of item to be shown in UI's
+     * @param {string} created_at Creation timestamp, has to be a format of "DD/MM/YYYY, HH:mm"
+     * @param {string} updated_at Last update timestamp, has to be a format of "DD/MM/YYYY, HH:mm"
+     * @param {string} file_name Item file name, has to be be unix & windows compliant
+     * @param {string} file_location Item file location, without "/" at start or end of string
+     * @param {integer} file_size The item file size, in bytes
+     * @param {string} file_hash Item file hash, of type SHA-256
+     * 
+     * @returns The newly created item object
+     */
     constructor(type, name, created_at, updated_at, file_name, file_location, file_size, file_hash) {
         this.type = type;
         this.name = name;
         this.created_at = created_at;
         this.updated_at = updated_at;
-        getStringHash(type, name, created_at).then(id => {
+        digestID(type, name, created_at).then(id => {
             this.id = id;
         });
         this.file_name = file_name;
@@ -108,26 +184,123 @@ class itemObject {
         this.file_size = file_size;
         this.file_hash = file_hash;
 
+        return this;
     }
 
+    /**
+     * Sets the items type
+     * @WARNING It is highly recommended to reevaluate the items Id after 
+     * changing this attribute, since this property is a part of that.
+     * @param {string} type Type of item, should be one of [container, document, file]
+     */
+    setType(type) {
+        this.type = type;
+    }
+
+    /**
+     * Sets the items name
+     * @WARNING It is highly recommended to reevaluate the items Id after 
+     * changing this attribute, since this property is a part of that.
+     * @param {string} name Name of item to be shown in UI's
+     */
+    setName(name) {
+        this.name = name;
+    }
+
+    /**
+     * Sets the items creation timestamp
+     * @WARNING It is highly recommended to reevaluate the items Id after 
+     * changing this attribute, since this property is a part of that.
+     * @param {string} created_at Creation timestamp, has to be a format of "DD/MM/YYYY, HH:mm"
+     */
+    setCreatedAt(created_at) {
+        this.created_at = created_at;
+    }
+
+    /**
+     * Sets the items last update
+     * @param {string} updated_at Last update timestamp, has to be a format of "DD/MM/YYYY, HH:mm"
+     */
+    setUpdatedAt(updated_at) {
+        this.updated_at = updated_at;
+    }
+
+    /**
+     * Sets the last updated timestamp to the current time
+     */
+    setUpdatedAtToNow() {
+        this.updated_at = getCurrentTimeString();
+    }
+
+    /**
+     * Sets the items file name
+     * @param {string} created_at Item file name, has to be be unix & windows compliant
+     */
     setFileName(file_name) {
         this.file_name = file_name;
     }
 
+    /**
+    * Sets the items file location
+    * INFO: Currently always the same directory, since that could be a potential security issue
+    * @param {string} file_location Item file location, without "/" at start or end of string
+    */
     setFileLocation(file_location) {
         this.file_name = file_location;
     }
 
-    rehash() {
-        getHashFromPath(this.file_location + '/' + this.file_name).then(hash => {
-            this.file_hash = hash;
-        });
+    /**
+     * Reevaluates the items Id using the currently set item type, name and creation timestamp
+     * @returns The reevaluated item Id
+     */
+    async reValId() {
+        const id = await digestID(this.type, this.name, this.created_at)
+        this.id = id;
+        return id;
     }
 
-    setSize() {
+    /**
+     * Sets the items file hash.
+     * @WARNING Only use this if you 100% know your provided hash matches the currently assigned file for this item,
+     * otherwise use reValHash()
+     * @param {string} file_hash Item file hash, of type SHA-256
+     */
+    setFileHash(file_hash) {
+        this.file_size = file_hash;
+    }
+
+    /**
+     * Reevaluates the items file hash using the currently set item file
+     * @returns {string} The reevaluated item file hash, of type SHA-256
+     */
+    async reValHash() {
+        const hash = await getHashFromPath(this.file_location + '/' + this.file_name)
+        this.file_hash = hash;
+        return hash;
+    }
+
+    /**
+    * Sets the items file size.
+    * @WARNING Only use this if you 100% know your provided file size matches the currently assigned file for this item,
+    * otherwise use reValSize()
+    * @param {integer} file_size The item file size, in bytes
+    */
+    setFileSize(size) {
+        this.file_size = size;
+    }
+
+    /**
+    * Reevaluates the items file size using the currently set item file
+    * @returns {integer} The reevaluated item file size, in bytes
+    */
+    reValSize() {
         this.file_size = statSync(file_path).size;
+        return this.file_size;
     }
 
+    /**
+     * @returns The item in a JSON string format
+     */
     toString() {
         return JSON.stringify(obj);
     }
@@ -152,17 +325,21 @@ app.get('/file', async (req, res) => {
     // Check if the right request is coming through for the file type
     try {
         const file = await new Promise((resolve, reject) => {q
-            let ftype = JSON.stringify(req.query.file).replace(/[ &\/\\#,+()$~%'":*?<>{}]/g, "").match(/(?<=\.)([\w]+)$/g)[0].toLowerCase();
+            let ftype = JSON.stringify(req.query.file)
+                .replace(/[ &\/\\#,+()$~%'":*?<>{}]/g, "")
+                .match(/(?<=\.)([\w]+)$/g)[0]
+                .toLowerCase();
             if (req.query.file && fileTypes.includes(ftype)) {
-                return resolve(JSON.stringify(req.query.file).replace(/[ &\/\\#,+()$~%'":*?<>{}]/g, "")); //Remove unallowed fs chars
+                return resolve(JSON.stringify(req.query.file)
+                    .replace(/[ &\/\\#,+()$~%'":*?<>{}]/g, "")); //Remove unallowed fs chars
             } else {
-                return reject(`Please provide a file type of ?file=${fileTypes.join('|')}`);}
+                return reject(error_msg + 'Please provide a file type of ?file=' + fileTypes.join('|') + '.')}
         });
         const file_path = await new Promise((resolve_1, reject_1) => {
             if (existsSync(file_dir + file)) {
                 return resolve_1(file_dir + file);
             }
-            return reject_1(`File '${file}' was not found.`);
+            return reject_1(error_msg + 'File with name:' + {file} + ' was not found.');
         });
         res.download(file_path);
     } catch (e) {
@@ -175,7 +352,7 @@ app.get('/last-update', async(_req, res) => {
         res.status(200).json({'last_update' : last_update, 'timeout_next' : timeout_next});
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}`,
+            message: error_msg + e,
         });
     }
 });
@@ -185,34 +362,77 @@ app.get('/items', async(_req, res) => {
         res.status(200).json({items, hashsum : await getStringHash(JSON.stringify(items)), total : items.length});
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}.`,
+            message: error_msg + + e,
         });
     }
 });
 
 app.get('/items/delete', async(req, res) => {
     try {
-        removeItemById(req.query.id);
+        if (!req.query.id) {
+            return res.status(400).send(error_msg + 'No Item Id provided.');
+        }
+        if (removeItemById(req.query.id)) {
+            res.status(200).send({
+                message: 'Item with Id ' + req.query.id + ' was successfully deleted.',
+            });
+        } else {
+            return res.status(400).send(error_msg + 'Item with Id ' + req.query.id + ' could not be found.');
+        }
         updateTimestamp();
-        res.status(200).send({
-            message: `Item with Id ${req.query.id} was successfully deleted.`,
-        });
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}.`,
+            message: error_msg + + e,
         });
     }
 });
 
-app.get('/items/update', async(_req, res) => {
+app.post('/items/update/params', async(req, res) => {
     try {
+        if (!req.query.id) {
+            return res.status(400).send(error_msg + 'No Item Id provided.');
+        }
+        const id = await updateParamsByItemId(req.query.id, req.body);
+        if (id) {
+            res.status(200).json({
+                message: 'Params for Item with Id ' + req.query.id + ' were successfully updated.',
+                new_id: id 
+            });
+        } else {
+            return res.status(400).send(error_msg + 'Item with Id ' + req.query.id + ' could not be found.');
+        }
         updateTimestamp();
-        res.status(200).send({
-            message: ''
-        });
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}.`,
+            message: error_msg + + e,
+        });
+    }
+});
+
+app.post('/items/update/file', async (req, res) => {
+    try {
+        if (!req.query.id) {
+            return res.status(400).send(error_msg + 'No Item Id provided.');
+        } else if (!req.files || Object.keys(req.files).length === 0) { 
+            return res.status(400).send(error_msg + 'No files provided.');
+        }
+
+        let file_hash = await getHashFromFile(Array.from(req.files.file.data));
+        if (!(file_hash == req.body.file_hash)) {
+            return res.status(400).send(error_msg + 'File didn' + "'" + 't match provided checksum: '
+                + req.body.file_hash + '. ');
+        }
+
+        req.files.file.mv(file_dir + '/' + req.files.file.name);   
+        if (updateFileByItemId(req.query.id, )) {
+
+        } else {
+            return res.status(400).send(error_msg + 'Item with Id ' + req.query.id + ' could not be found.');
+        }
+        updateTimestamp();
+    } catch (e) {
+        res.status(400).send({
+            message: error_msg + + e,
         });
     }
 });
@@ -220,16 +440,16 @@ app.get('/items/update', async(_req, res) => {
 app.post('/items/create', async(req, res) => {
     try {
         if (!req.body.type || !req.body.name || !req.body.created_at || !req.body.updated_at) {
-            return res.status(400).send('Encountered error while processing item creation: Missing params. Consult /items/template');    
+            return res.status(400).send(error_msg + 'Missing params. Consult /items/template');    
         }
         if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(400).send('Encountered error while processing upload: No files provided.');
+            return res.status(400).send(error_msg + 'No files provided.');
         }
 
         let file_hash = await getHashFromFile(Array.from(req.files.file.data));
         //console.log('Our Hash: \t' + file_hash + '\nTheir Hash: \t' + req.body.file_hash);
         if (!(file_hash == req.body.file_hash)) {
-            return res.status(400).send('Encountered error while processing upload: File didn' +"'"+ 't match provided checksum: ' 
+            return res.status(400).send(error_msg + 'File didn' +"'"+ 't match provided checksum: ' 
                 + req.body.file_hash + '. ');
         }
         req.files.file.mv(file_dir + '/' + req.files.file.name);
@@ -237,11 +457,11 @@ app.post('/items/create', async(req, res) => {
                              req.body.updated_at, req.files.file.name, file_dir, req.files.file.size, file_hash);
         updateTimestamp();
         res.status(200).send({
-            message: `Item with Name ${req.body.name} and File ${req.files.file.name} was successfully created.`,
+            message: 'Item with Name ' + req.body.name + ' and File ' + req.files.file.name + ' was successfully created.',
         });
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}`,
+            message: error_msg + e,
         });
     }
 });
@@ -251,7 +471,7 @@ app.get('/items/template', async(_req, res) => {
         res.status(200).json({templates : ['container', 'document', 'item']});
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}`,
+            message: error_msg + e,
         });
     }
 });
@@ -261,7 +481,7 @@ app.get('/items/template/container', async(_req, res) => {
         res.status(200).send(JSON.parse(readFileSync('./items/template/container.json').toString()));
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}`,
+            message: error_msg + e,
         });
     }
 });
@@ -271,7 +491,7 @@ app.get('/items/template/document', async(_req, res) => {
         res.status(200).send(JSON.parse(readFileSync('./items/template/document.json').toString()));
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}`,
+            message: error_msg + e,
         });
     }
 });
@@ -281,7 +501,7 @@ app.get('/items/template/file', async(_req, res) => {
         res.status(200).send(JSON.parse(readFileSync('./items/template/file.json').toString()));
     } catch (e) {
         res.status(400).send({
-            message: `Encountered error while processing request: ${e}`,
+            message: error_msg + e,
         });
     }
 });
@@ -294,4 +514,4 @@ async function main() {
 await main();
 
 // HTTP SERVER
-app.listen(port, () => console.log(`Listening on port ${port}`));
+app.listen(port, () => console.log('Listening on port ' + port));
