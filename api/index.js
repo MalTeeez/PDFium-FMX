@@ -90,6 +90,12 @@ function getItemsByName(name) {
     return res;
 }
 
+/**
+ * Update an items params
+ * @param {*} id The Id of the item to be updated
+ * @param {*} new_params An object with optional: type, name, created_at, updated_at attributes
+ * @returns False if the item could'nt be updated or the items (new) Id if it was updated (It will be different if type, name or created_at were changed)
+ */
 async function updateParamsByItemId(id, new_params) {
     let item = getItemById(id);
     if (item) {
@@ -101,25 +107,47 @@ async function updateParamsByItemId(id, new_params) {
     } else return false;
 }
 
+/**
+ * Update an items file
+ * @param {string} id The Id of the item to be updated
+ * @param {string} file_name The name of the new file
+ * @param {string} file_dir The location of the new file
+ * @param {string} file_size The Size of the new file
+ * @param {string} file_hash The SHA-256 hash of the new file
+ * @returns {boolean} Whether or not the item was updated
+ */
 function updateFileByItemId(id, file_name, file_dir, file_size, file_hash) {
     let item = getItemById(id);
     if (item) {
         item.setFileName(file_name);
         item.setFileDir(file_dir);
         item.setFileSize(file_size);
-        item.setFileHash(file_hash);     
+        item.setFileHash(file_hash);   
+        return true;  
     } else return false;
 }
 
 /**
  * Generates a Paperless item Id
- * @param {string} type 
- * @param {string} name 
- * @param {string} created_at 
- * @returns {string} The Generated item Id
+ * @param {string} p1 Param 1
+ * @param {string} p2 Param 2
+ * @param {string} p3 Param 3
+ * @returns The generated item Id as a string
  */
-async function digestID(type, name, created_at) {
-    const uin8array = new TextEncoder().encode('PPRLSS::'+type+name+created_at);
+async function digestID(p1, p2, p3) {
+    const uin8array = new TextEncoder().encode('PPRLSS::'+ p1 + p2 + p3);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', uin8array);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((h) => h.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Generates a SHA-256 hash from a string
+ * @param {string} string The input text
+ * @returns The generated hash as a string
+ */
+async function getHashFromString(string) {
+    const uin8array = new TextEncoder().encode(string);
     const hashBuffer = await crypto.subtle.digest('SHA-256', uin8array);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((h) => h.toString(16).padStart(2, '0')).join('');
@@ -128,7 +156,7 @@ async function digestID(type, name, created_at) {
 /**
  * Generates a SHA-256 hash from a file stored on disk
  * @param {*} file Byte buffer array
- * @returns {string} A SHA-256 hash as a string
+ * @returns A SHA-256 hash as a string
  */
 async function getHashFromPath(file_path) {
     let file = readFileSync(file_path);
@@ -145,7 +173,7 @@ async function getHashFromPath(file_path) {
 /**
  * Generates a loaded files SHA-256 hash
  * @param {*} file Byte buffer array
- * @returns {string} A SHA-256 hash as a string
+ * @returns A SHA-256 hash as a string
  */
 async function getHashFromFile(file) {
     const uin8array = new Uint8Array(file);
@@ -359,10 +387,10 @@ app.get('/last-update', async(_req, res) => {
 
 app.get('/items', async(_req, res) => { 
     try {
-        res.status(200).json({items, hashsum : await getStringHash(JSON.stringify(items)), total : items.length});
+        res.status(200).json({items, hashsum : await getHashFromString(JSON.stringify(items)), total : items.length});
     } catch (e) {
         res.status(400).send({
-            message: error_msg + + e,
+            message: error_msg + e,
         });
     }
 });
@@ -382,7 +410,7 @@ app.get('/items/delete', async(req, res) => {
         updateTimestamp();
     } catch (e) {
         res.status(400).send({
-            message: error_msg + + e,
+            message: error_msg + e,
         });
     }
 });
@@ -404,7 +432,7 @@ app.post('/items/update/params', async(req, res) => {
         updateTimestamp();
     } catch (e) {
         res.status(400).send({
-            message: error_msg + + e,
+            message: error_msg + e,
         });
     }
 });
@@ -432,7 +460,7 @@ app.post('/items/update/file', async (req, res) => {
         updateTimestamp();
     } catch (e) {
         res.status(400).send({
-            message: error_msg + + e,
+            message: error_msg + e,
         });
     }
 });
@@ -510,6 +538,13 @@ async function main() {
     var jsonItems = JSON.parse(readFileSync('./items/items.json').toString());
     await jsonItems.items.forEach((element) => loadToItems(element)); 
 }
+
+app.get('*', async(_req, res) => {
+    console.log('Got Request for root.');
+    res.status(200).send('<!doctype html> <html lang="en"><head><title>Paperless API</title><meta charset="utf-8">' + 
+        '<br><br><br><p style = "text-align:center" ><span style="font-family:Tahoma,Geneva,sans-serif"><strong><span style="font-size:48px"><span style="color:#4e5f70">Success! </span></span></strong></span><span style="font-size:48px">🐬</span></p >' +
+        '<p style="text-align:center"><span style="font-family:Tahoma,Geneva,sans-serif"><span style="font-size:48px"><span style="color:#4e5f70">Using <u>Paperless</u>-API, Version<em> </em><em>1.0</em></span></span></span></p></html>')
+});
 
 await main();
 
