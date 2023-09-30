@@ -2,8 +2,8 @@
 !*/
 
 !.gitignore
-!src/**
-!img/**
+!client/src/**
+!client/img/**
 !api/**
 api/files/**
 !pdfiumfmx.dpr
