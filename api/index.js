@@ -7,7 +7,7 @@ const app = express();
 const port = '5001';
 import cors from 'cors';
 
-//DECLARE GLOBAL VARS
+// DECLARE GLOBAL VARS
 var items = []; 
 var structureItems = [];
 const temp_dir = 'tmp';
@@ -43,12 +43,12 @@ function getCurrentTimeString() {
  * @param {string} id The to be removed items Id
  * @returns {boolean} Whether an item was deleted or not
  */
-function removeItemById(id) {
-    for (const item of items) {
+function removeItemById(id, list) {
+    for (const item of list) {
         if (item.id === id) {
-            const index = items.indexOf(item);
+            const index = list.indexOf(item);
             if (index > -1) {
-                items.splice(index, 1);
+                list.splice(index, 1);
                 return true;
             }
         }
@@ -61,9 +61,18 @@ function removeItemById(id) {
  * @param {string} id The to be removed structure items Id
  * @returns {boolean} Whether a structure item was deleted or not
  */
-function removeStructItemById(id, parentList) {
-    if ()
+function removeStructItemById(id, list) {
+    if (Object.is(list, structureItems) && removeItemById(id, structureItems)) return true;
+    for (const structItem of list) {
+        if (structItem.removeItemFromContentsById(id)) {
+            return true;
+        } else if (structItem.contents && removeStructItemById(id, structItem.contents)) {
+            return true;
+        }
+    }
+    return false;
 }
+
 
 /**
  * Tries to find an item by its Id
@@ -380,37 +389,6 @@ class itemObject {
     }
 }
 
-
-function loadToItems(obj) {
-    items.push( new itemObject(obj.type, obj.name, obj.created_at, obj.updated_at, obj.file_name, obj.file_location));
-}
-
-function createAndLoadToItems(type, name, created_at, updated_at, file_name, file_location, file_size, file_hash) {
-    let item = new itemObject(type, name, created_at, updated_at, file_name, file_location, file_size, file_hash)
-    items.push(item);
-    return item.id;
-}
-
-async function loadToStructure(structure) {
-    for (const structItem of structure.items[0].contents) {
-        structItem.contents ? structureItems.push(loadToStructItem(structItem.type, structItem.item_id, structItem.contents)) 
-            : structureItems.push(loadToStructItem(structItem.type, structItem.item_id));
-    }
-}
-
-function loadToStructItem(type, item_id, _contents) {
-    let item;
-    if (_contents) {
-        item = new structureItem(type, item_id)
-        _contents.forEach(element => {
-            item.addItemToContents(loadToStructItem(element));
-        });
-    } else {
-        item = new structureItem(type, item_id)
-    }
-    return item;
-}
-
 class structureItem {
     /**
      * Creates a new structure item object
@@ -463,11 +441,53 @@ class structureItem {
     /**
      * Removes a sub structure item from this structure items contents
      * @param {*} structItem The structure item to be removed
+     * @returns Whether a structure item was deleted or not
      */
     removeItemFromContents(structItem) {
         if (this.contents) {
-            this.contents.
+            const index = this.contents.indexOf(structItem);
+            if (index > -1) {
+                this.contents.splice(index, 1);
+                return true;
+            }
         }
+        return false;
+    }
+
+    /**
+     * Removes a sub structure item from this structure items contents
+     * @param {string} Id The Id of the structure item to be removed
+     * @returns Whether a structure item was deleted or not
+     */
+    removeItemFromContentsById(id) {
+        if (this.contents) {
+            for (const item of this.contents) {
+                if (item.id === id) {
+                    const index = this.contents.indexOf(item);
+                    if (index > -1) {
+                        this.contents.splice(index, 1);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if this structure item contains a sub structure item with an Id
+     * @param {string} id The to be found structure items Id
+     * @returns Whether or not the item was found
+     */
+    containsItemById(id) {
+        if (this.contents) {
+            for (const item of this.contents) {
+                if (item.id === id) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -477,6 +497,39 @@ class structureItem {
         return JSON.stringify(obj);
     }
 }
+
+
+//INIT FROM FILES
+function loadToItems(obj) {
+    items.push( new itemObject(obj.type, obj.name, obj.created_at, obj.updated_at, obj.file_name, obj.file_location));
+}
+
+function createAndLoadToItems(type, name, created_at, updated_at, file_name, file_location, file_size, file_hash) {
+    let item = new itemObject(type, name, created_at, updated_at, file_name, file_location, file_size, file_hash)
+    items.push(item);
+    return item.id;
+}
+
+async function loadToStructure(structure) {
+    for (const structItem of structure.items[0].contents) {
+        structItem.contents ? structureItems.push(loadToStructItem(structItem.type, structItem.item_id, structItem.contents)) 
+            : structureItems.push(loadToStructItem(structItem.type, structItem.item_id));
+    }
+}
+
+function loadToStructItem(type, item_id, _contents) {
+    let item;
+    if (_contents) {
+        item = new structureItem(type, item_id)
+        _contents.forEach(element => {
+            item.addItemToContents(loadToStructItem(element));
+        });
+    } else {
+        item = new structureItem(type, item_id)
+    }
+    return item;
+}
+
 
 
 // API ENDPOINTS
@@ -509,7 +562,7 @@ app.post('/structure/create/simple', async(req, res) => {
         if (!req.body.type || !req.body.item_id) {
             return res.status(400).send(error_msg + 'Missing params. Consult /template/structure');    
         }
-        let parent = getStructItemById(req.query.id);
+        let parent = getStructItemById(req.query.id, structureItems);
         if (parent) {
             if (parent.type === 'container') {
                 let structItem = new structureItem(req.body.type, req.body.item_id);
@@ -556,7 +609,7 @@ app.get('/structure/delete', async(req, res) => {
         if (!req.query.id) {
             return res.status(400).send(error_msg + 'No Structure Item Id provided.');
         }
-        if (removeStructItemById(req.query.id)) {
+        if (removeStructItemById(req.query.id, structureItems)) {
             res.status(200).send({
                 message: 'Structure Item with Id ' + req.query.id + ' was successfully deleted.',
             });
@@ -586,7 +639,7 @@ app.get('/items/delete', async(req, res) => {
         if (!req.query.id) {
             return res.status(400).send(error_msg + 'No Item Id provided.');
         }
-        if (removeItemById(req.query.id)) {
+        if (removeItemById(req.query.id, items)) {
             res.status(200).send({
                 message: 'Item with Id ' + req.query.id + ' was successfully deleted.',
             });
