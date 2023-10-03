@@ -1,14 +1,24 @@
 {
-  "type": "",
-  "contents": [
-    "type": "",
-    "id": "",
-    "name": "",
-    "created_at": "",
-    "updated_at": "",
-    "file_name": "",
-    "file_location": "",
-    "file_size": 0,
-    "file_hash": null
-  ]
+  "explanation": "Templates are used to get an idea of what the api wants when handling requests.",
+  "available_endpoints": [
+    {
+      "0": "/last-update",
+      "1": "/structure",
+      "2": "/items",
+      "3": "/items/delete",
+      "4": "/items/update/params",
+      "5": "/items/update/file",
+      "6": "/items/create",
+      "7": "/file",
+      "8": "/template",
+      "9": "/template/structure",
+      "10": "/template/items",
+      "11": "/template/template",
+      "12": "/template/container",
+      "13": "/template/document",
+      "14": "/template/file",
+      "15": "/"
+    }
+  ],
+  "version": 1.0
 }

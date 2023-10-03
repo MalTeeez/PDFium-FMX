@@ -9,6 +9,7 @@ import cors from 'cors';
 
 //DECLARE GLOBAL VARS
 var items = []; 
+var structureItems = [];
 const temp_dir = 'tmp';
 const file_dir = 'files';
 var last_update = -1;
@@ -56,7 +57,16 @@ function removeItemById(id) {
 }
 
 /**
- * Tries to remove an item by its Id
+ * Tries to remove a structure item by its Id
+ * @param {string} id The to be removed structure items Id
+ * @returns {boolean} Whether a structure item was deleted or not
+ */
+function removeStructItemById(id, parentList) {
+    if ()
+}
+
+/**
+ * Tries to find an item by its Id
  * @param {string} id The to be found items Id
  * @returns {*} The item if one was found, otherwise "false"
  */
@@ -67,6 +77,27 @@ function getItemById(id) {
             if (index > -1) {
                 return item;
             }
+        }
+    };
+    return false;
+}
+
+/**
+ * Tries to find a structure item by its Id
+ * @param {string} id The to be found structure items Id
+ * @param {*} parentList Array of items to search in, used for recursion
+ * @returns {*} The structure item if one was found, otherwise "false"
+ */
+function getStructItemById(id, parentList) {
+    for (const structItem of parentList) {
+        if (structItem.id === id) {
+            const index = parentList.indexOf(structItem);
+            if (index > -1) {
+                return structItem;
+            }
+        }
+        if (structItem.contents && getStructItemById(id, structItem.contents)) {
+            return getStructItemById(id, structItem.contents);
         }
     };
     return false;
@@ -88,6 +119,21 @@ function getItemsByName(name) {
         }
     };
     return res;
+}
+
+/**
+ * Update a structure items params
+ * @param {*} id The Id of the structure item to be updated
+ * @param {*} new_params An object with optional: type, item_id
+ * @returns Whether the structure item was updated or not.
+ */
+async function updateParamsByStructItemId(id, new_params) {
+    let structItem = getStructItemById(id);
+    if (structItem) {
+        if (new_params.type) structItem.setType(new_params.type);
+        if (new_params.item_id) structItem.setNewId(new_params.new_id);
+        return true;
+    } else return false;
 }
 
 /**
@@ -340,44 +386,184 @@ function loadToItems(obj) {
 }
 
 function createAndLoadToItems(type, name, created_at, updated_at, file_name, file_location, file_size, file_hash) {
-    items.push( new itemObject(type, name, created_at, updated_at, file_name, file_location, file_size, file_hash));
+    let item = new itemObject(type, name, created_at, updated_at, file_name, file_location, file_size, file_hash)
+    items.push(item);
+    return item.id;
 }
 
-// API ENDPOINTS
-app.get('/file', async (req, res) => {
-    const fileTypes = [
-        "pdf"
-    ];
-
-    console.log('Got File API Request for ' + JSON.stringify(req.query));
-    // Check if the right request is coming through for the file type
-    try {
-        const file = await new Promise((resolve, reject) => {q
-            let ftype = JSON.stringify(req.query.file)
-                .replace(/[ &\/\\#,+()$~%'":*?<>{}]/g, "")
-                .match(/(?<=\.)([\w]+)$/g)[0]
-                .toLowerCase();
-            if (req.query.file && fileTypes.includes(ftype)) {
-                return resolve(JSON.stringify(req.query.file)
-                    .replace(/[ &\/\\#,+()$~%'":*?<>{}]/g, "")); //Remove unallowed fs chars
-            } else {
-                return reject(error_msg + 'Please provide a file type of ?file=' + fileTypes.join('|') + '.')}
-        });
-        const file_path = await new Promise((resolve_1, reject_1) => {
-            if (existsSync(file_dir + file)) {
-                return resolve_1(file_dir + file);
-            }
-            return reject_1(error_msg + 'File with name:' + {file} + ' was not found.');
-        });
-        res.download(file_path);
-    } catch (e) {
-        res.status(400).send(e);
+async function loadToStructure(structure) {
+    for (const structItem of structure.items[0].contents) {
+        structItem.contents ? structureItems.push(loadToStructItem(structItem.type, structItem.item_id, structItem.contents)) 
+            : structureItems.push(loadToStructItem(structItem.type, structItem.item_id));
     }
-});
+}
+
+function loadToStructItem(type, item_id, _contents) {
+    let item;
+    if (_contents) {
+        item = new structureItem(type, item_id)
+        _contents.forEach(element => {
+            item.addItemToContents(loadToStructItem(element));
+        });
+    } else {
+        item = new structureItem(type, item_id)
+    }
+    return item;
+}
+
+class structureItem {
+    /**
+     * Creates a new structure item object
+     * @param {string} type Type of this structure item, one of [container, document, file]
+     * @param {string} item_id The item id of the corresponding item
+     * @param {*} _contents Array of sub-structure items, only for type container
+     */
+    constructor (type, item_id, _contents) {
+        this.id = crypto.randomUUID();
+        this.type = type;
+        this.item_id = item_id;
+        if (_contents && _contents.length > 0 && this.type === 'container') {
+            this.contents = [];
+            for (const structItem of _contents) {
+                this.contents.push(structItem);
+            }
+        }
+
+        return this;
+    }
+
+     /**
+     * Sets the structure items type
+     * @WARNING Do not change from container to non-container, other way should be fine
+     * @param {string} type Type of structure item, should be one of [container, document, file]
+     */
+    setType(type) {
+        this.type = type;
+    }
+
+     /**
+     * Sets the structure items item id
+     * @param {string} item_id The item id of the corresponding item
+     */
+    setItemId(item_id) {
+        this.item_id = item_id;
+    }
+
+    /**
+     * Adds a sub structure item to this structure items contents
+     * @param {*} structItem The structure item to be added
+     */
+    addItemToContents(structItem) {
+        if (!this.contents) {
+            this.contents = []
+        }
+        this.contents.push(structItem);
+    }
+
+    /**
+     * Removes a sub structure item from this structure items contents
+     * @param {*} structItem The structure item to be removed
+     */
+    removeItemFromContents(structItem) {
+        if (this.contents) {
+            this.contents.
+        }
+    }
+
+    /**
+    * @returns The structure item in a JSON string format
+    */
+    toString() {
+        return JSON.stringify(obj);
+    }
+}
+
+
+// API ENDPOINTS
 
 app.get('/last-update', async(_req, res) => {
     try {
         res.status(200).json({'last_update' : last_update, 'timeout_next' : timeout_next});
+    } catch (e) {
+        res.status(400).send({
+            message: error_msg + e,
+        });
+    }
+});
+
+app.get('/structure', async(_req, res) => { 
+    try {
+        res.status(200).json({structureItems, hashsum : await getHashFromString(JSON.stringify(structureItems)), total : structureItems.length});
+    } catch (e) {
+        res.status(400).send({
+            message: error_msg + e,
+        });
+    }
+});
+
+app.post('/structure/create/simple', async(req, res) => { 
+    try {
+        if (!req.query.id) {
+            return res.status(400).send(error_msg + 'No Parent Structure Item Id provided.');
+        }
+        if (!req.body.type || !req.body.item_id) {
+            return res.status(400).send(error_msg + 'Missing params. Consult /template/structure');    
+        }
+        let parent = getStructItemById(req.query.id);
+        if (parent) {
+            if (parent.type === 'container') {
+                let structItem = new structureItem(req.body.type, req.body.item_id);
+                parent.addItemToContents(structItem);
+                updateTimestamp();
+                res.status(200).json({
+                    message: 'Structure Item with parent ' + req.query.id + ' and type ' + req.body.type + ' was successfully created.',
+                    new_id: structItem.id
+                });
+            } else {
+                return res.status(400).send(error_msg + 'Parent Structure Item with Id ' + req.query.id + ' is not a container and can therefore not contain structure items.');    
+            }
+        } else {
+            return res.status(400).send(error_msg + 'Parent Structure Item with Id ' + req.query.id + ' could not be found.');    
+        }
+    } catch (e) {
+        res.status(400).send({
+            message: error_msg + e,
+        });
+    }
+});
+
+app.get('/structure/update', async(req, res) => { 
+    try {
+        if (!req.query.id) {
+            return res.status(400).send(error_msg + 'No Structure Item Id provided.');
+        }
+        if (id) {
+            updateParamsByStructItemId(req.query.id, req.body);
+            updateTimestamp();
+            res.status(200).send('Params for Structure Item with Id ' + req.query.id + ' were successfully updated.');
+        } else {
+            return res.status(400).send(error_msg + 'Item with Id ' + req.query.id + ' could not be found.');
+        }
+    } catch (e) {
+        res.status(400).send({
+            message: error_msg + e,
+        });
+    }
+});
+
+app.get('/structure/delete', async(req, res) => { 
+    try {
+        if (!req.query.id) {
+            return res.status(400).send(error_msg + 'No Structure Item Id provided.');
+        }
+        if (removeStructItemById(req.query.id)) {
+            res.status(200).send({
+                message: 'Structure Item with Id ' + req.query.id + ' was successfully deleted.',
+            });
+        } else {
+            return res.status(400).send(error_msg + 'Structure Item with Id ' + req.query.id + ' could not be found.');
+        }
+        updateTimestamp();
     } catch (e) {
         res.status(400).send({
             message: error_msg + e,
@@ -468,7 +654,7 @@ app.post('/items/update/file', async (req, res) => {
 app.post('/items/create', async(req, res) => {
     try {
         if (!req.body.type || !req.body.name || !req.body.created_at || !req.body.updated_at) {
-            return res.status(400).send(error_msg + 'Missing params. Consult /items/template');    
+            return res.status(400).send(error_msg + 'Missing params. Consult /template/items');    
         }
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).send(error_msg + 'No files provided.');
@@ -481,11 +667,12 @@ app.post('/items/create', async(req, res) => {
                 + req.body.file_hash + '. ');
         }
         req.files.file.mv(file_dir + '/' + req.files.file.name);
-        createAndLoadToItems(req.body.type, req.body.name, req.body.created_at, 
+        let id = createAndLoadToItems(req.body.type, req.body.name, req.body.created_at, 
                              req.body.updated_at, req.files.file.name, file_dir, req.files.file.size, file_hash);
         updateTimestamp();
-        res.status(200).send({
+        res.status(200).json({
             message: 'Item with Name ' + req.body.name + ' and File ' + req.files.file.name + ' was successfully created.',
+            new_id: id
         });
     } catch (e) {
         res.status(400).send({
@@ -494,9 +681,40 @@ app.post('/items/create', async(req, res) => {
     }
 });
 
-app.get('/items/template', async(_req, res) => {
+app.get('/file', async (req, res) => {
+    const fileTypes = [
+        "pdf"
+    ];
+
+    console.log('Got File API Request for ' + JSON.stringify(req.query));
+    // Check if the right request is coming through for the file type
     try {
-        res.status(200).json({templates : ['container', 'document', 'item']});
+        const file = await new Promise((resolve, reject) => {q
+            let ftype = JSON.stringify(req.query.file)
+                .replace(/[ &\/\\#,+()$~%'":*?<>{}]/g, "")
+                .match(/(?<=\.)([\w]+)$/g)[0]
+                .toLowerCase();
+            if (req.query.file && fileTypes.includes(ftype)) {
+                return resolve(JSON.stringify(req.query.file)
+                    .replace(/[ &\/\\#,+()$~%'":*?<>{}]/g, "")); //Remove unallowed fs chars
+            } else {
+                return reject(error_msg + 'Please provide a file type of ?file=' + fileTypes.join('|') + '.')}
+        });
+        const file_path = await new Promise((resolve_1, reject_1) => {
+            if (existsSync(file_dir + file)) {
+                return resolve_1(file_dir + file);
+            }
+            return reject_1(error_msg + 'File with name:' + {file} + ' was not found.');
+        });
+        res.download(file_path);
+    } catch (e) {
+        res.status(400).send(e);
+    }
+});
+
+app.get('/template', async(_req, res) => {
+    try {
+        res.status(200).json({templates : ['container', 'document', 'item', 'items', 'structure', 'template']});
     } catch (e) {
         res.status(400).send({
             message: error_msg + e,
@@ -504,7 +722,37 @@ app.get('/items/template', async(_req, res) => {
     }
 });
 
-app.get('/items/template/container', async(_req, res) => {
+app.get('/template/structure', async(_req, res) => {
+    try {
+        res.status(200).send(JSON.parse(readFileSync('./items/template/contentstructure.json').toString()));
+    } catch (e) {
+        res.status(400).send({
+            message: error_msg + e,
+        });
+    }
+});
+
+app.get('/template/items', async(_req, res) => {
+    try {
+        res.status(200).send(JSON.parse(readFileSync('./items/template/items.json').toString()));
+    } catch (e) {
+        res.status(400).send({
+            message: error_msg + e,
+        });
+    }
+});
+
+app.get('/template/template', async(_req, res) => {
+    try {
+        res.status(200).send(JSON.parse(readFileSync('./items/template/template.json').toString()));
+    } catch (e) {
+        res.status(400).send({
+            message: error_msg + e,
+        });
+    }
+});
+
+app.get('/template/container', async(_req, res) => {
     try {
         res.status(200).send(JSON.parse(readFileSync('./items/template/container.json').toString()));
     } catch (e) {
@@ -514,7 +762,7 @@ app.get('/items/template/container', async(_req, res) => {
     }
 });
 
-app.get('/items/template/document', async(_req, res) => {
+app.get('/template/document', async(_req, res) => {
     try {
         res.status(200).send(JSON.parse(readFileSync('./items/template/document.json').toString()));
     } catch (e) {
@@ -524,7 +772,7 @@ app.get('/items/template/document', async(_req, res) => {
     }
 });
 
-app.get('/items/template/file', async(_req, res) => {
+app.get('/template/file', async(_req, res) => {
     try {
         res.status(200).send(JSON.parse(readFileSync('./items/template/file.json').toString()));
     } catch (e) {
@@ -534,17 +782,20 @@ app.get('/items/template/file', async(_req, res) => {
     }
 });
 
-async function main() {
-    var jsonItems = JSON.parse(readFileSync('./items/items.json').toString());
-    await jsonItems.items.forEach((element) => loadToItems(element)); 
-}
-
-app.get('*', async(_req, res) => {
+app.get('/', async(_req, res) => {
     console.log('Got Request for root.');
     res.status(200).send('<!doctype html> <html lang="en"><head><title>Paperless API</title><meta charset="utf-8">' + 
         '<br><br><br><p style = "text-align:center" ><span style="font-family:Tahoma,Geneva,sans-serif"><strong><span style="font-size:48px"><span style="color:#4e5f70">Success! </span></span></strong></span><span style="font-size:48px">🐬</span></p >' +
         '<p style="text-align:center"><span style="font-family:Tahoma,Geneva,sans-serif"><span style="font-size:48px"><span style="color:#4e5f70">Using <u>Paperless</u>-API, Version<em> </em><em>1.0</em></span></span></span></p></html>')
 });
+
+
+async function main() {
+    var jsonItems = JSON.parse(readFileSync('./items/items.json').toString());
+    await jsonItems.items.forEach((element) => loadToItems(element)); 
+    var contentStruct = JSON.parse(readFileSync('./items/contentstructure.json').toString());
+    await loadToStructure(contentStruct);
+}
 
 await main();
 

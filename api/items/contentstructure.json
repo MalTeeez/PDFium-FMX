@@ -1,21 +1,92 @@
 {
-  "id": "root",
-  "type": "container",
-  "contents":  [
+  "items": [
     {
-      "id": "",
+      "id": "root",
       "type": "container",
       "contents": [
-
+        {
+          "id": "",
+          "type": "container",
+          "item_id": "",
+          "contents": [
+            {
+              "id": "",
+              "type": "document",
+              "item_id": ""
+            },
+            {
+              "id": "",
+              "type": "container",
+              "item_id": "",
+              "contents": [
+                {
+                  "id": "",
+                  "type": "container",
+                  "item_id": "",
+                  "contents": [
+                    {
+                      "id": "",
+                      "type": "container",
+                      "item_id": "",
+                      "contents": [            {
+                        "id": "",
+                        "type": "container",
+                        "item_id": "",
+                        "contents": [            {
+                          "id": "",
+                          "type": "container",
+                          "item_id": "",
+                          "contents": [            {
+                            "id": "",
+                            "type": "container",
+                            "item_id": "",
+                            "contents": [            {
+                              "id": "",
+                              "type": "container",
+                              "item_id": "",
+                              "contents": [            {
+                                "id": "",
+                                "type": "container",
+                                "item_id": "",
+                                "contents": [            {
+                                  "id": "",
+                                  "type": "container",
+                                  "item_id": "",
+                                  "contents": [            {
+                                    "id": "",
+                                    "type": "container",
+                                    "item_id": "",
+                                    "contents": [            {
+                                      "id": "",
+                                      "type": "document",
+                                      "item_id": "306c44175f6400fbd2e4622f772196e403cb249187cab6ce01f5726d47894a0e"
+                                    }
+                                  ]
+                                  }]
+                                }]
+                              }]
+                            }]
+                          }]
+                        }]
+                      }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "",
+          "type": "document",
+          "item_id": ""
+        },
+        {
+          "id": "",
+          "type": "file",
+          "item_id": ""
+        }
       ]
-    },
-    {
-      "id": "",
-      "type": "document",
-    },
-    {
-      "id": "",
-      "type": "file",
     }
   ],
   "hashsum": "",

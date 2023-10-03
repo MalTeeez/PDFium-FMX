@@ -1,21 +1,26 @@
 {
-  "id": "root",
-  "type": "container",
-  "contents":  [
+  "items": [
     {
-      "id": "",
+      "id": "root",
       "type": "container",
       "contents": [
-
+        {
+          "id": "",
+          "type": "container",
+          "item_id": "",
+          "contents": []
+        },
+        {
+          "id": "",
+          "type": "document",
+          "item_id": ""
+        },
+        {
+          "id": "",
+          "type": "file",
+          "item_id": ""
+        }
       ]
-    },
-    {
-      "id": "",
-      "type": "document",
-    },
-    {
-      "id": "",
-      "type": "file",
     }
   ],
   "hashsum": "",
